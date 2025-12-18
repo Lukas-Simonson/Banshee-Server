@@ -1,6 +1,6 @@
 # Banshee-Server
 
-💧 A project built with the Vapor web framework.
+A self-hosted podcast management server.
 
 ## Getting Started
 
@@ -20,6 +20,8 @@ swift test
 ```
 
 ### See more
+
+💧 A project built with the Vapor web framework.
 
 - [Vapor Website](https://vapor.codes)
 - [Vapor Documentation](https://docs.vapor.codes)
