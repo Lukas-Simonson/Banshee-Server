@@ -9,3 +9,16 @@ extension RSS {
         let description: String
     }
 }
+
+extension RSS.EpisodeDTO {
+    func toModel() -> Episode {
+        let episode = Episode()
+
+        episode.title = title
+        episode.pubDate = pubDate
+        episode.audioEnclosure = enclosure.toModel()
+        episode.description = description
+
+        return episode
+    }
+}

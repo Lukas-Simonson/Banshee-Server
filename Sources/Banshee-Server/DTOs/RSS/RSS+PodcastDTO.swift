@@ -11,3 +11,18 @@ extension RSS {
         let item: [EpisodeDTO]
     }
 }
+
+extension RSS.PodcastDTO {
+    func toModel(rssFeedURL: URL) -> Podcast {
+        let podcast = Podcast()
+
+        podcast.rssFeedURL = rssFeedURL
+        podcast.title = title
+        podcast.link = link
+        podcast.language = language
+        podcast.imageURL = image?.url
+        podcast.description = description
+
+        return podcast
+    }
+}
