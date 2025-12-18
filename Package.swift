@@ -15,6 +15,8 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.8.0"),
         // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors.
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
+        // 🔒 JWT Managment for secure authorization.
+        .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
         // XML Decoding and Encoding using the Codable protocol.
         .package(url: "https://github.com/CoreOffice/XMLCoder", from: "0.17.1"),
     ],
@@ -27,7 +29,8 @@ let package = Package(
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
-                .product(name: "XMLCoder", package: "XMLCoder")
+                .product(name: "JWT", package: "jwt"),
+                .product(name: "XMLCoder", package: "XMLCoder"),
             ],
             swiftSettings: swiftSettings
         ),

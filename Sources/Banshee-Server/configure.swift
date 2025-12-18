@@ -1,6 +1,7 @@
 import NIOSSL
 import Fluent
 import FluentPostgresDriver
+import JWT
 import XMLCoder
 import Vapor
 
@@ -9,7 +10,7 @@ public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     try await configureXML(app)
-
+    try await configureAuth(app)
     try await configureDatabase(app)
 
     // register routes
@@ -23,6 +24,10 @@ private func configureXML(_ app: Application) async throws {
     ContentConfiguration.global.use(decoder: xmlDecoder, for: .init(type: "application", subType: "rss+xml"))
 }
 
+private func configureAuth(_ app: Application) async throws {
+    await app.jwt.keys.add(hmac: HMACKey(stringLiteral: try getEnvironmentValue("JWT_SECRET")), digestAlgorithm: .sha256)
+}
+
 private func configureDatabase(_ app: Application) async throws {
     let configuration = DatabaseConfigurationFactory.postgres(configuration: SQLPostgresConfiguration(
         hostname: try getEnvironmentValue("DATABASE_HOST"),
@@ -34,6 +39,9 @@ private func configureDatabase(_ app: Application) async throws {
     ))
 
     app.databases.use(configuration, as: .psql)
+
+    // Migrations
+    app.migrations.add(User.Migration.Create())
 }
 
 private func getEnvironmentValue(_ key: String) throws -> String {
