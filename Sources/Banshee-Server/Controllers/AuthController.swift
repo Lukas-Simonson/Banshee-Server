@@ -47,7 +47,7 @@ struct AuthController: RouteCollection {
             subject: SubjectClaim(value: user.id!.uuidString),
             // TODO: Setup valid expiration.
             expiration: .init(value: .distantFuture), 
-            role: Role.admin
+            role: user.role
         )
 
         return try await ["token": req.jwt.sign(payload)]
