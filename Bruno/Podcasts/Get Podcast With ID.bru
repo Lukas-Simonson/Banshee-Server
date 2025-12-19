@@ -1,0 +1,31 @@
+meta {
+  name: Get Podcast With ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/api/podcasts/:podcastID
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~config: override
+}
+
+params:path {
+  podcastID: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  ## Query Parameters
+  
+  - **config**: An enumeration declaring how to include the user configuration in this request. ('none', 'include', 'override')(default: 'override')
+  
+}

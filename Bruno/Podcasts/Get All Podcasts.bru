@@ -1,0 +1,15 @@
+meta {
+  name: Get All Podcasts
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/api/podcasts
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
