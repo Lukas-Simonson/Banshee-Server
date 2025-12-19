@@ -24,8 +24,7 @@ struct PodcastsController: RouteCollection {
         let query = try req.query.decode(GetAllPodcastsQueryParameters.self)
 
         return try await Podcast.query(on: req.db)
-            // .when(query.config != .none) { $0.with(\.$config) }
-            .includeConfig(query._config != .none)
+            .when(query._config != .none) { $0.with(\.$config) }
             .all()
             .map { try PodcastDTO(from: $0, overrideWithConfig: query._config == .override) }
     }
@@ -39,8 +38,7 @@ struct PodcastsController: RouteCollection {
         let podcast = try await Podcast.query(on: req.db)
             .filter(\.$id == id)
             .with(\.$episodes)
-            // .when(query.config != .none, then: { $0.with(\.$config) })
-            .includeConfig(query._config != .none)
+            .when(query._config != .none, then: { $0.with(\.$config) })
             .first()
             .unwrap(or: Errors.unknownID)
         
