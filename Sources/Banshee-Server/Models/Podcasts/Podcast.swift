@@ -23,6 +23,9 @@ final class Podcast: Model, @unchecked Sendable {
     @Field(key: "description")
     var description: String
 
+    @OptionalChild(for: \.$podcast)
+    var config: PodcastConfig?
+
     @Children(for: \.$podcast)
     var episodes: [Episode]
 }

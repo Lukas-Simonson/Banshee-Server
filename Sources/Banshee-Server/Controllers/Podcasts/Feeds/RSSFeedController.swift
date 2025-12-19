@@ -20,7 +20,7 @@ struct RSSFeedController: RouteCollection {
         try await podcast.save(on: req.db)
         try await podcast.$episodes.create(rssResponse.channel.item.map { $0.toModel() }, on: req.db)
 
-        return try PodcastDTO(from: podcast)
+        return try PodcastDTO(from: podcast, overrideWithConfig: false)
     }
 
     private func getAllFeeds(req: Request) async throws -> [FeedResponse] {
