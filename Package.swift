@@ -19,6 +19,8 @@ let package = Package(
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
         // XML Decoding and Encoding using the Codable protocol.
         .package(url: "https://github.com/CoreOffice/XMLCoder", from: "0.17.1"),
+        // 🌐 Async HTTP client for streaming downloads.
+        .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.9.0"),
     ],
     targets: [
         .executableTarget(
@@ -31,6 +33,7 @@ let package = Package(
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "JWT", package: "jwt"),
                 .product(name: "XMLCoder", package: "XMLCoder"),
+                .product(name: "AsyncHTTPClient", package: "async-http-client"),
             ],
             swiftSettings: swiftSettings
         ),

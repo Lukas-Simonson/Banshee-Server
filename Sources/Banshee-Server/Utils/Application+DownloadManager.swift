@@ -6,7 +6,17 @@ extension Application {
     }
 
     var downloadManager: DownloadManager {
-        get { storage[DownloadManagerKey.self, default: DownloadManager()] }
+        get {
+            if let existing = storage[DownloadManagerKey.self] {
+                return existing
+            }
+
+            // Initialize with proper storage path
+            let storagePath = directory.workingDirectory + "Storage/episodes"
+            let manager = DownloadManager(storageBasePath: storagePath)
+            storage[DownloadManagerKey.self] = manager
+            return manager
+        }
         set { storage[DownloadManagerKey.self] = newValue }
     }
 }
