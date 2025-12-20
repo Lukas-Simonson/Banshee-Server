@@ -1,0 +1,21 @@
+meta {
+  name: Get All Podcasts
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/api/podcasts
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~config: override
+  ~includeRSSConfig: true
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

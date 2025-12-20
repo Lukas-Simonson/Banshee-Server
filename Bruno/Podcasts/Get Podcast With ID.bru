@@ -1,0 +1,35 @@
+meta {
+  name: Get Podcast With ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/api/podcasts/:podcastID
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~episodeConfig: override
+  ~config: override
+  ~includeRSSFeed: false
+}
+
+params:path {
+  podcastID: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  ## Query Parameters
+  
+  - **config**: An enumeration declaring how to include the user configuration in the response. ('none', 'include', 'override')(default: 'override')
+  - **includeRSSConfig**: A boolean value declaring if the RSSConfig should be included in the response. (default: 'false')
+  - **episodeConfig**: An enumeration declaring how to include each episode configuration in the response. ('none', 'include', 'override')(default: 'override')
+  
+}
