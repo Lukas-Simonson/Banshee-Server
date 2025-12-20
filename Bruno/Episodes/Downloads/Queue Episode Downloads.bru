@@ -1,0 +1,28 @@
+meta {
+  name: Queue Episode Downloads
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/api/episodes/downloads
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "episodeIDs": [
+      {{episodeIDs}}
+    ]
+  }
+}
+
+vars:pre-request {
+  episodeIDs: "C85F1B56-F2C6-46F7-B44D-A28E26391BF8"
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

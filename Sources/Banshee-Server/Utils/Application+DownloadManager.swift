@@ -7,15 +7,9 @@ extension Application {
 
     var downloadManager: DownloadManager {
         get {
-            if let existing = storage[DownloadManagerKey.self] {
-                return existing
-            }
-
-            // Initialize with proper storage path
-            let storagePath = directory.workingDirectory + "Storage/episodes"
-            let manager = DownloadManager(storageBasePath: storagePath)
-            storage[DownloadManagerKey.self] = manager
-            return manager
+            let manager = storage[DownloadManagerKey.self]
+            precondition(manager != nil, "DownloadManager not added to application before being used.")
+            return manager!
         }
         set { storage[DownloadManagerKey.self] = newValue }
     }
