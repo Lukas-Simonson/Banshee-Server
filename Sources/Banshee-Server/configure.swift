@@ -20,6 +20,9 @@ public func configure(_ app: Application) async throws {
 
 private func configureXML(_ app: Application) async throws {
     let xmlDecoder = XMLDecoder.rssDecoder()
+
+    xmlDecoder.shouldProcessNamespaces = true
+    xmlDecoder.namespaceFilteringStrategy = .stripByPrefix(["itunes"])
     
     ContentConfiguration.global.use(decoder: xmlDecoder, for: .xml)
     ContentConfiguration.global.use(decoder: xmlDecoder, for: .init(type: "application", subType: "rss+xml"))

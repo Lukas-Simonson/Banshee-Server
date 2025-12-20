@@ -6,6 +6,8 @@ extension RSS {
         let pubDate: Date
         let enclosure: EnclosureDTO
         let link: URL?
+        let season: String?
+        let episode: Int?
         let description: String
     }
 }
@@ -17,6 +19,8 @@ extension RSS.EpisodeDTO {
         episode.title = title
         episode.pubDate = pubDate
         episode.description = description
+        episode.season = season
+        episode.episodeNumber = self.episode
 
         return episode
     }

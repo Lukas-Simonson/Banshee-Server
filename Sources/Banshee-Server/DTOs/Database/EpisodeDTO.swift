@@ -5,6 +5,9 @@ struct EpisodeDTO: Content {
     var title: String
     var pubDate: Date
     var description: String
+    var season: String?
+    var episodeNumber: Int?
+
     var podcastID: UUID
     
     var config: EpisodeConfigDTO?
@@ -20,6 +23,9 @@ extension EpisodeDTO {
         self.title = episode.title
         self.pubDate = episode.pubDate
         self.description = episode.description
+        self.season = episode.season
+        self.episodeNumber = episode.episodeNumber
+
         self.podcastID = episode.$podcast.id
 
         self.config = episode.$config.isNotLoaded ? nil : try EpisodeConfigDTO(from: episode.config)
