@@ -22,6 +22,7 @@ private func configureXML(_ app: Application) async throws {
     
     ContentConfiguration.global.use(decoder: xmlDecoder, for: .xml)
     ContentConfiguration.global.use(decoder: xmlDecoder, for: .init(type: "application", subType: "rss+xml"))
+    ContentConfiguration.global.use(decoder: xmlDecoder, for: .init(type: "text", subType: "xml"))
 }
 
 private func configureAuth(_ app: Application) async throws {
