@@ -4,10 +4,11 @@ struct EpisodeDTO: Content {
     var id: UUID
     var title: String
     var pubDate: Date
-    var audioEnclosure: AudioEnclosureDTO
     var description: String
     var podcastID: UUID
+    
     var config: EpisodeConfigDTO?
+    var audio: AudioConfigDTO?
 }
 
 extension EpisodeDTO {
@@ -18,11 +19,11 @@ extension EpisodeDTO {
         self.id = id
         self.title = episode.title
         self.pubDate = episode.pubDate
-        self.audioEnclosure = AudioEnclosureDTO(from: episode.audioEnclosure)
         self.description = episode.description
         self.podcastID = episode.$podcast.id
 
         self.config = episode.$config.isNotLoaded ? nil : try EpisodeConfigDTO(from: episode.config)
+        self.audio = episode.$audioConfig.isNotLoaded ? nil : try AudioConfigDTO(from: episode.audioConfig)
 
         if overrideWithConfig, let config {
             self.title ?= config.title

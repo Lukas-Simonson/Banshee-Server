@@ -42,6 +42,10 @@ struct PodcastsController: RouteCollection {
                 if query._episodeConfig != .none {
                     episode.with(\.$config)
                 }
+
+                if query._includeEpisodeAudio {
+                    episode.with(\.$audioConfig)
+                }
             }
             .when(query._config != .none) { $0.with(\.$config) }
             .when(query._includeRSSConfig) { $0.with(\.$rssConfig) }
@@ -91,6 +95,9 @@ extension PodcastsController {
 
         var episodeConfig: ConfigMode?
         var _episodeConfig: ConfigMode { episodeConfig ?? .override }
+
+        var includeEpisodeAudio: Bool?
+        var _includeEpisodeAudio: Bool { includeEpisodeAudio ?? true }
     }
 
     struct GetAllPodcastsQueryParameters: Content {

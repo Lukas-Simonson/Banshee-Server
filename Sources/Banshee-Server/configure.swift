@@ -50,6 +50,7 @@ private func configureDatabase(_ app: Application) async throws {
     
     app.migrations.add(Episode.Migration.Create())
     app.migrations.add(EpisodeConfig.Migration.Create())
+    app.migrations.add(AudioConfig.Migration.Create())
 }
 
 private func getEnvironmentValue(_ key: String) throws -> String {

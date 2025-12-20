@@ -16,7 +16,6 @@ extension RSS.EpisodeDTO {
 
         episode.title = title
         episode.pubDate = pubDate
-        episode.audioEnclosure = enclosure.toModel()
         episode.description = description
 
         return episode

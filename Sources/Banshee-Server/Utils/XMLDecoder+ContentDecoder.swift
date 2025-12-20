@@ -13,6 +13,9 @@ extension XMLDecoder: @retroactive ContentDecoder, @unchecked Sendable {
 
         let decoder = XMLDecoder()
         decoder.dateDecodingStrategy = .formatted(formatter)
+        
+        // TODO: Find out to prioritize non-namespaced properties
+        // decoder.shouldProcessNamespaces = true
 
         return decoder
     }

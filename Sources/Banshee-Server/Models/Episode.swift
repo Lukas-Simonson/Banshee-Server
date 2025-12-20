@@ -11,9 +11,6 @@ final class Episode: Model, @unchecked Sendable {
     @Field(key: "pubDate")
     var pubDate: Date
 
-    @Group(key: "audioEnclosure")
-    var audioEnclosure: AudioEnclosure
-
     @Field(key: "description")
     var description: String
 
@@ -22,6 +19,9 @@ final class Episode: Model, @unchecked Sendable {
 
     @OptionalChild(for: \.$episode)
     var config: EpisodeConfig?
+
+    @OptionalChild(for: \.$episode)
+    var audioConfig: AudioConfig?
 }
 
 // MARK: - Model Conformance
@@ -38,9 +38,6 @@ extension Episode.Migration {
                 .id()
                 .field("title", .string, .required)
                 .field("pubDate", .datetime, .required)
-                .field("audioEnclosure_url", .string, .required)
-                .field("audioEnclosure_length", .int64)
-                .field("audioEnclosure_type", .string, .required)
                 .field("description", .string, .required)
                 .field("podcastID", .uuid, .references("podcast", "id", onDelete: .cascade))
                 .create()

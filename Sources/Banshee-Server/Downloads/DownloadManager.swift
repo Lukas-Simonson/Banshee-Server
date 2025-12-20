@@ -1,0 +1,5 @@
+import Vapor
+
+actor DownloadManager {
+    
+}

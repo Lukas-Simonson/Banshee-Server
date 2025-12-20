@@ -9,10 +9,10 @@ extension RSS {
 }
 
 extension RSS.EnclosureDTO {
-    func toModel() -> AudioEnclosure {
-        let enclosure = AudioEnclosure()
+    func toModel() -> AudioConfig {
+        let enclosure = AudioConfig()
 
-        enclosure.url = url
+        enclosure.remoteURL = url
         enclosure.length = length
         enclosure.type = type
 
