@@ -18,9 +18,8 @@ final class LockedValue<Value>: @unchecked Sendable {
 
 /// Represents an active file download with real-time progress tracking
 final class FileDownload: Sendable {
-    let id: UUID
-    let from: URL
-    let to: URL
+    /// The download request being processed
+    let request: DownloadRequest
 
     // Thread-safe progress tracking
     private let _progress: LockedValue<Double>
@@ -42,10 +41,8 @@ final class FileDownload: Sendable {
         case cancelled
     }
 
-    init(id: UUID, from: URL, to: URL, task: Task<Void, any Error>) {
-        self.id = id
-        self.from = from
-        self.to = to
+    init(request: DownloadRequest, task: Task<Void, any Error>) {
+        self.request = request
         self._progress = LockedValue(0.0)
         self._status = LockedValue(.downloading)
         self.task = task
