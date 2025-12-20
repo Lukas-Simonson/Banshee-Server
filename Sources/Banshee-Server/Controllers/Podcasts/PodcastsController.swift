@@ -38,15 +38,21 @@ struct PodcastsController: RouteCollection {
 
         let podcast = try await Podcast.query(on: req.db)
             .filter(\.$id == id)
-            .with(\.$episodes)
+            .with(\.$episodes) { episode in
+                if query._episodeConfig != .none {
+                    episode.with(\.$config)
+                }
+            }
             .when(query._config != .none) { $0.with(\.$config) }
             .when(query._includeRSSConfig) { $0.with(\.$rssConfig) }
             .first()
             .unwrap(or: Errors.unknownID)
+
+        req.logger.info("\(query)")
         
         return try PodcastDTO(
             from: podcast, 
-            with: podcast.episodes.map { try EpisodeDTO(from: $0, podcastID: podcast.requireID()) },
+            with: podcast.episodes.map { try EpisodeDTO(from: $0, overrideWithConfig: query._episodeConfig == .override) },
             overrideWithConfig: query._config == .override
         )
     }
@@ -69,8 +75,8 @@ struct PodcastsController: RouteCollection {
 
 extension PodcastsController {
     enum Errors {
-        static var unknownID: Abort { Abort(.badRequest, reason: "Unknown podcast id provided") }
-        static var invalidIDFormat: Abort { Abort(.badRequest, reason: "Invalid podcast id format") }
+        static var unknownID: Abort { Abort(.badRequest, reason: "Unknown id provided") }
+        static var invalidIDFormat: Abort { Abort(.badRequest, reason: "Invalid id format") }
     }
 }
 
@@ -82,6 +88,9 @@ extension PodcastsController {
 
         var includeRSSConfig: Bool?
         var _includeRSSConfig: Bool { includeRSSConfig ?? false }
+
+        var episodeConfig: ConfigMode?
+        var _episodeConfig: ConfigMode { episodeConfig ?? .override }
     }
 
     struct GetAllPodcastsQueryParameters: Content {

@@ -42,10 +42,13 @@ private func configureDatabase(_ app: Application) async throws {
 
     // Migrations
     app.migrations.add(User.Migration.Create())
+    
     app.migrations.add(Podcast.Migration.Create())
     app.migrations.add(PodcastConfig.Migration.Create())
     app.migrations.add(RSSConfig.Migration.Create())
+    
     app.migrations.add(Episode.Migration.Create())
+    app.migrations.add(EpisodeConfig.Migration.Create())
 }
 
 private func getEnvironmentValue(_ key: String) throws -> String {

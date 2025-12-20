@@ -4,6 +4,7 @@ struct PodcastConfigDTO: Content {
     var title: String?
     var imageURL: URL?
     var description: String?
+    var podcastID: UUID?
 }
 
 extension PodcastConfigDTO {
@@ -13,6 +14,7 @@ extension PodcastConfigDTO {
         self.title = config.title
         self.imageURL = config.imageURL
         self.description = config.description
+        self.podcastID = config.$podcast.id
     }
 
     func toModel(with id: UUID?) -> PodcastConfig {
@@ -20,7 +22,7 @@ extension PodcastConfigDTO {
 
         if let id {
             config.id = id
-            // Tell Fluent to update the model.
+            // Tell Fluent we can update the model.
             config._$idExists = true
         }
         
