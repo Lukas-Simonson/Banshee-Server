@@ -1,11 +1,12 @@
 import Foundation
 import AsyncHTTPClient
 import NIOCore
-import NIOPosix
 import NIOHTTP1
+import NIOFileSystem
+import SystemPackage
 
-/// Delegate for streaming podcast episode downloads to disk
-final class StreamingDownloadDelegate: HTTPClientResponseDelegate {
+/// Delegate for streaming podcast episode downloads to disk using modern NIOFileSystem
+final class StreamingDownloadDelegate: HTTPClientResponseDelegate, @unchecked Sendable {
     typealias Response = DownloadResult
 
     private let destinationPath: String
@@ -13,11 +14,11 @@ final class StreamingDownloadDelegate: HTTPClientResponseDelegate {
     private let onProgress: @Sendable (Double) -> Void
     private let resumeFromByte: Int64
 
-    private var fileHandle: NIOFileHandle?
+    private let fileSystem: FileSystem
+    private var fileHandle: WriteFileHandle?
+    private var bufferedWriter: BufferedWriter<WriteFileHandle>?
     private var receivedBytes: Int64 = 0
     private var statusCode: HTTPResponseStatus?
-    private let threadPool: NIOThreadPool
-    private let fileIO: NonBlockingFileIO
 
     struct DownloadResult: Sendable {
         let success: Bool
@@ -42,11 +43,7 @@ final class StreamingDownloadDelegate: HTTPClientResponseDelegate {
         self.expectedBytes = expectedBytes
         self.resumeFromByte = resumeFromByte
         self.onProgress = onProgress
-
-        // Initialize thread pool for file I/O
-        self.threadPool = NIOThreadPool(numberOfThreads: 1)
-        self.threadPool.start()
-        self.fileIO = NonBlockingFileIO(threadPool: threadPool)
+        self.fileSystem = .shared
     }
 
     func didReceiveHead(
@@ -62,104 +59,135 @@ final class StreamingDownloadDelegate: HTTPClientResponseDelegate {
             )
         }
 
-        // Create directory structure if needed
-        let directory = (destinationPath as NSString).deletingLastPathComponent
-        do {
-            try FileManager.default.createDirectory(
-                atPath: directory,
-                withIntermediateDirectories: true
-            )
-        } catch {
-            return task.eventLoop.makeFailedFuture(
-                DownloadError.fileIOError("Failed to create directory: \(error)")
-            )
+        let promise = task.eventLoop.makePromise(of: Void.self)
+
+        Task {
+            do {
+                // Create directory structure
+                let filePath = FilePath(self.destinationPath)
+                let directory = filePath.removingLastComponent()
+                try await self.fileSystem.createDirectory(
+                    at: directory,
+                    withIntermediateDirectories: true
+                )
+
+                // Determine open options based on resume
+                let options: OpenOptions.Write
+                if self.resumeFromByte > 0 {
+                    // Resume: modify existing file
+                    options = .modifyFile(createIfNecessary: true)
+                } else {
+                    // New file
+                    options = .newFile(
+                        replaceExisting: false,
+                        permissions: FilePermissions(rawValue: 0o644)
+                    )
+                }
+
+                // Open file
+                let handle = try await self.fileSystem.openFile(
+                    forWritingAt: filePath,
+                    options: options
+                )
+
+                self.fileHandle = handle
+
+                // Create buffered writer starting at resume offset
+                self.bufferedWriter = handle.bufferedWriter(
+                    startingAtAbsoluteOffset: self.resumeFromByte,
+                    capacity: .kibibytes(512)
+                )
+
+                self.receivedBytes = self.resumeFromByte
+
+                promise.succeed(())
+            } catch {
+                promise.fail(DownloadError.fileIOError("Failed to prepare file: \(error)"))
+            }
         }
 
-        // Open file for writing
-        do {
-            // If resuming, open in append mode, otherwise create new file
-            if resumeFromByte > 0 && FileManager.default.fileExists(atPath: destinationPath) {
-                // Open for appending
-                let fileHandle = try NIOFileHandle(path: destinationPath, mode: .write, flags: .default)
-                self.fileHandle = fileHandle
-                self.receivedBytes = resumeFromByte
-            } else {
-                // Create new file
-                let fileHandle = try NIOFileHandle(
-                    path: destinationPath,
-                    mode: .write,
-                    flags: .allowFileCreation(posixMode: 0o644)
-                )
-                self.fileHandle = fileHandle
-            }
-            return task.eventLoop.makeSucceededFuture(())
-        } catch {
-            return task.eventLoop.makeFailedFuture(
-                DownloadError.fileIOError("Failed to open file: \(error)")
-            )
-        }
+        return promise.futureResult
     }
 
     func didReceiveBodyPart(
         task: HTTPClient.Task<Response>,
         _ buffer: ByteBuffer
     ) -> EventLoopFuture<Void> {
-        guard let fileHandle = self.fileHandle else {
+        guard var writer = self.bufferedWriter else {
             return task.eventLoop.makeFailedFuture(
-                DownloadError.fileIOError("File handle not initialized")
+                DownloadError.fileIOError("File writer not initialized")
             )
         }
 
         let bytesToWrite = Int64(buffer.readableBytes)
-        receivedBytes += bytesToWrite
+        let promise = task.eventLoop.makePromise(of: Void.self)
 
-        // Calculate offset for writing (append at end for resume)
-        let writeOffset = resumeFromByte > 0 ? receivedBytes - bytesToWrite : receivedBytes - bytesToWrite
+        Task {
+            do {
+                // Write chunk using buffered writer
+                try await writer.write(contentsOf: buffer.readableBytesView)
 
-        // Write chunk to disk
-        return fileIO.write(
-            fileHandle: fileHandle,
-            toOffset: writeOffset,
-            buffer: buffer,
-            eventLoop: task.eventLoop
-        ).map { _ in
-            // Update progress
-            if let expectedBytes = self.expectedBytes, expectedBytes > 0 {
-                let progress = Double(self.receivedBytes) / Double(expectedBytes)
-                self.onProgress(min(progress, 1.0))
+                // Update state
+                self.receivedBytes += bytesToWrite
+                self.bufferedWriter = writer // Save updated writer
+
+                // Update progress
+                if let expectedBytes = self.expectedBytes, expectedBytes > 0 {
+                    let progress = Double(self.receivedBytes) / Double(expectedBytes)
+                    self.onProgress(min(progress, 1.0))
+                }
+
+                promise.succeed(())
+            } catch {
+                promise.fail(error)
             }
         }
+
+        return promise.futureResult
     }
 
     func didFinishRequest(task: HTTPClient.Task<Response>) throws -> Response {
-        // Close file handle
-        try? fileHandle?.close()
+        let promise = task.eventLoop.makePromise(of: Response.self)
 
-        // Shutdown thread pool
-        threadPool.shutdownGracefully { _ in }
+        Task {
+            do {
+                // Flush remaining buffered data
+                try await self.bufferedWriter?.flush()
 
-        guard let statusCode = statusCode else {
-            throw DownloadError.fileIOError("No response received")
+                // Close file handle
+                try await self.fileHandle?.close()
+
+                guard let statusCode = self.statusCode else {
+                    promise.fail(DownloadError.fileIOError("No response received"))
+                    return
+                }
+
+                // Final progress update
+                self.onProgress(1.0)
+
+                let result = DownloadResult(
+                    success: statusCode == .ok || statusCode == .partialContent,
+                    bytesWritten: self.receivedBytes,
+                    statusCode: statusCode,
+                    error: nil
+                )
+
+                promise.succeed(result)
+            } catch {
+                promise.fail(error)
+            }
         }
 
-        // Final progress update
-        onProgress(1.0)
-
-        return DownloadResult(
-            success: statusCode == .ok || statusCode == .partialContent,
-            bytesWritten: receivedBytes,
-            statusCode: statusCode,
-            error: nil
-        )
+        // Wait for async work to complete
+        return try promise.futureResult.wait()
     }
 
     func didReceiveError(task: HTTPClient.Task<Response>, _ error: any Error) {
-        // Cleanup on error
-        try? fileHandle?.close()
+        Task {
+            // Close file handle
+            try? await self.fileHandle?.close()
 
-        // Shutdown thread pool
-        threadPool.shutdownGracefully { _ in }
-
-        // Don't delete partial file to allow resume
+            // Don't delete partial file to allow resume
+        }
     }
 }

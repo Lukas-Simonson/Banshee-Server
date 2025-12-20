@@ -1,14 +1,13 @@
 import Vapor
-import Fluent
 import AsyncHTTPClient
 import NIOCore
 import NIOHTTP1
 import Foundation
 
-/// Manages large file downloads, specifically focused on Podcast Episodes
+/// Manages large file downloads with streaming, concurrency control, and resume support
 actor DownloadManager {
 
-    /// Current Download Tasks, keyed by the id of the episode that is being downloaded.
+    /// Current Download Tasks, keyed by the download request ID
     private(set) var tasks = [UUID: FileDownload]()
 
     /// Dedicated HTTP client for streaming downloads
@@ -24,7 +23,7 @@ actor DownloadManager {
     private var activeCount: Int = 0
 
     /// Queue of pending downloads waiting for a slot
-    private var pendingQueue: [(Episode, any Database)] = []
+    private var pendingQueue: [DownloadRequest] = []
 
     init(storageBasePath: String = "Storage/episodes") {
         self.storageBasePath = storageBasePath
@@ -35,61 +34,46 @@ actor DownloadManager {
         try? httpClient.syncShutdown()
     }
 
-    /// Downloads a podcast episode from its remote URL to local storage
-    /// - Parameters:
-    ///   - episode: Episode to download (must have audioConfig with remoteURL)
-    ///   - db: Database connection for updating AudioConfig
-    /// - Throws: DownloadError if download fails or prerequisites not met
-    func download(episode: Episode, db: any Database) async throws {
-        // Validate episode has audio config with remote URL
-        guard let audioConfig = episode.audioConfig else {
-            throw DownloadError.missingAudioConfig
-        }
-
-        guard let episodeID = episode.id else {
-            throw DownloadError.missingEpisodeID
-        }
-
-        guard let remoteURL = audioConfig.remoteURL else {
-            throw DownloadError.missingRemoteURL
-        }
-
+    /// Downloads a file from a remote URL to local storage
+    /// - Parameter request: Download request containing remote URL and destination path
+    /// - Throws: DownloadError if download fails or already in progress
+    func download(_ request: DownloadRequest) async throws {
         // Check if already downloading
-        if tasks[episodeID] != nil {
-            throw DownloadError.alreadyDownloading(episodeID)
+        if tasks[request.id] != nil {
+            throw DownloadError.alreadyDownloading(request.id)
         }
 
         // Check if at concurrency limit
         if activeCount >= maxConcurrentDownloads {
             // Add to queue
-            pendingQueue.append((episode, db))
+            pendingQueue.append(request)
             return
         }
 
         // Start download
-        try await startDownload(episode: episode, audioConfig: audioConfig, episodeID: episodeID, remoteURL: remoteURL, db: db)
+        try await startDownload(request)
     }
 
     /// Cancels an active download
-    func cancelDownload(episodeID: UUID) async {
-        guard let download = tasks[episodeID] else { return }
+    func cancelDownload(id: UUID) async {
+        guard let download = tasks[id] else { return }
 
         download.task.cancel()
         download.updateStatus(.cancelled)
 
         // Cleanup partial file
-        try? FileManager.default.removeItem(at: download.to)
+        try? FileManager.default.removeItem(atPath: download.request.destinationPath)
 
-        tasks.removeValue(forKey: episodeID)
+        tasks.removeValue(forKey: id)
         activeCount -= 1
 
         // Process next in queue
         processNextInQueue()
     }
 
-    /// Gets current download progress for an episode
-    func getProgress(episodeID: UUID) -> Double? {
-        tasks[episodeID]?.progress
+    /// Gets current download progress for a request
+    func getProgress(id: UUID) -> Double? {
+        tasks[id]?.progress
     }
 
     /// Lists all active downloads
@@ -99,49 +83,25 @@ actor DownloadManager {
 
     // MARK: - Private Helpers
 
-    private func startDownload(
-        episode: Episode,
-        audioConfig: AudioConfig,
-        episodeID: UUID,
-        remoteURL: URL,
-        db: any Database
-    ) async throws {
+    private func startDownload(_ request: DownloadRequest) async throws {
         activeCount += 1
-
-        // Determine destination path
-        let filename = sanitizeFilename(extractFilename(from: remoteURL, mimeType: audioConfig.type))
-        let destinationPath = "\(storageBasePath)/\(episodeID)/\(filename)"
-        let destinationURL = URL(fileURLWithPath: destinationPath)
 
         // Create download task
         let downloadTask = Task<Void, any Error> {
-            try await self.performDownloadWithRetry(
-                episodeID: episodeID,
-                remoteURL: remoteURL,
-                destinationPath: destinationPath,
-                expectedBytes: audioConfig.length,
-                db: db
-            )
+            try await self.performDownloadWithRetry(request: request)
         }
 
         // Track download
         let fileDownload = FileDownload(
-            id: episodeID,
-            from: remoteURL,
-            to: destinationURL,
+            request: request,
             task: downloadTask
         )
 
-        tasks[episodeID] = fileDownload
+        tasks[request.id] = fileDownload
 
         // Await completion
         do {
             try await downloadTask.value
-
-            // Update database with local URL
-            audioConfig.localURL = destinationURL
-            try await audioConfig.update(on: db)
-
             fileDownload.updateStatus(.completed)
         } catch is CancellationError {
             fileDownload.updateStatus(.cancelled)
@@ -150,7 +110,7 @@ actor DownloadManager {
             throw error
         }
 
-        tasks.removeValue(forKey: episodeID)
+        tasks.removeValue(forKey: request.id)
         activeCount -= 1
 
         // Process next in queue
@@ -160,19 +120,15 @@ actor DownloadManager {
     private func processNextInQueue() {
         guard !pendingQueue.isEmpty, activeCount < maxConcurrentDownloads else { return }
 
-        let (episode, db) = pendingQueue.removeFirst()
+        let request = pendingQueue.removeFirst()
 
         Task {
-            try await self.download(episode: episode, db: db)
+            try await self.download(request)
         }
     }
 
     private func performDownloadWithRetry(
-        episodeID: UUID,
-        remoteURL: URL,
-        destinationPath: String,
-        expectedBytes: Int64?,
-        db: any Database,
+        request: DownloadRequest,
         maxRetries: Int = 3
     ) async throws {
         var attempt = 0
@@ -180,12 +136,7 @@ actor DownloadManager {
 
         while attempt < maxRetries {
             do {
-                try await performDownload(
-                    episodeID: episodeID,
-                    remoteURL: remoteURL,
-                    destinationPath: destinationPath,
-                    expectedBytes: expectedBytes
-                )
+                try await performDownload(request: request)
                 return
             } catch let error as StreamingDownloadDelegate.DownloadError {
                 lastError = error
@@ -216,41 +167,36 @@ actor DownloadManager {
         throw lastError ?? DownloadError.downloadFailed("Unknown error after \(maxRetries) retries")
     }
 
-    private func performDownload(
-        episodeID: UUID,
-        remoteURL: URL,
-        destinationPath: String,
-        expectedBytes: Int64?
-    ) async throws {
+    private func performDownload(request: DownloadRequest) async throws {
         // Check for existing partial file to enable resume
         var resumeFromByte: Int64 = 0
-        if FileManager.default.fileExists(atPath: destinationPath) {
-            let attrs = try? FileManager.default.attributesOfItem(atPath: destinationPath)
+        if FileManager.default.fileExists(atPath: request.destinationPath) {
+            let attrs = try? FileManager.default.attributesOfItem(atPath: request.destinationPath)
             resumeFromByte = (attrs?[.size] as? Int64) ?? 0
         }
 
         // Create HTTP request
-        var request = try HTTPClient.Request(url: remoteURL.absoluteString)
+        var httpRequest = try HTTPClient.Request(url: request.remoteURL.absoluteString)
 
         // Add Range header for resume if needed
         if resumeFromByte > 0 {
-            request.headers.add(name: "Range", value: "bytes=\(resumeFromByte)-")
+            httpRequest.headers.add(name: "Range", value: "bytes=\(resumeFromByte)-")
         }
 
         // Create delegate with progress callback
         let delegate = StreamingDownloadDelegate(
-            destinationPath: destinationPath,
-            expectedBytes: expectedBytes,
+            destinationPath: request.destinationPath,
+            expectedBytes: request.expectedBytes,
             resumeFromByte: resumeFromByte
         ) { [weak self] progress in
             Task {
-                await self?.updateProgress(episodeID: episodeID, progress: progress)
+                await self?.updateProgress(id: request.id, progress: progress)
             }
         }
 
         // Execute download with timeout
         let result = try await httpClient.execute(
-            request: request,
+            request: httpRequest,
             delegate: delegate,
             deadline: .now() + .seconds(3600) // 1 hour timeout for large files
         ).futureResult.get()
@@ -260,71 +206,22 @@ actor DownloadManager {
         }
     }
 
-    private func updateProgress(episodeID: UUID, progress: Double) {
-        tasks[episodeID]?.updateProgress(progress)
-    }
-
-    private func extractFilename(from url: URL, mimeType: String?) -> String {
-        // Try to get filename from URL
-        let urlFilename = url.lastPathComponent
-
-        // Validate it has an extension
-        if urlFilename.contains(".") && !urlFilename.hasSuffix(".") {
-            return urlFilename
-        }
-
-        // Fallback to UUID with appropriate extension
-        let ext = extensionForMimeType(mimeType) ?? "mp3"
-        return "\(UUID().uuidString).\(ext)"
-    }
-
-    private func extensionForMimeType(_ mimeType: String?) -> String? {
-        guard let mimeType = mimeType?.lowercased() else { return nil }
-
-        switch mimeType {
-        case "audio/mpeg", "audio/mp3": return "mp3"
-        case "audio/mp4", "audio/m4a": return "m4a"
-        case "audio/x-m4a": return "m4a"
-        case "audio/ogg": return "ogg"
-        case "audio/wav": return "wav"
-        case "audio/aac": return "aac"
-        case "audio/flac": return "flac"
-        default: return nil
-        }
-    }
-
-    private func sanitizeFilename(_ filename: String) -> String {
-        // Remove path separators and prevent directory traversal
-        filename
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "\\", with: "_")
-            .replacingOccurrences(of: "..", with: "_")
+    private func updateProgress(id: UUID, progress: Double) {
+        tasks[id]?.updateProgress(progress)
     }
 
     // MARK: - Error Types
 
     enum DownloadError: Error, CustomStringConvertible {
-        case missingAudioConfig
-        case missingEpisodeID
-        case missingRemoteURL
         case alreadyDownloading(UUID)
         case downloadFailed(String)
-        case insufficientDiskSpace
 
         var description: String {
             switch self {
-            case .missingAudioConfig:
-                return "Episode does not have audio configuration"
-            case .missingEpisodeID:
-                return "Episode missing ID"
-            case .missingRemoteURL:
-                return "Audio config missing remote URL"
             case .alreadyDownloading(let id):
-                return "Episode \(id) is already downloading"
+                return "Download \(id) is already in progress"
             case .downloadFailed(let message):
                 return "Download failed: \(message)"
-            case .insufficientDiskSpace:
-                return "Insufficient disk space for download"
             }
         }
     }
