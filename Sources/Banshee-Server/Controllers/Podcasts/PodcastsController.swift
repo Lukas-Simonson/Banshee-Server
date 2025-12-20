@@ -25,6 +25,7 @@ struct PodcastsController: RouteCollection {
 
         return try await Podcast.query(on: req.db)
             .when(query._config != .none) { $0.with(\.$config) }
+            .when(query._includeRSSConfig) { $0.with(\.$rssConfig) }
             .all()
             .map { try PodcastDTO(from: $0, overrideWithConfig: query._config == .override) }
     }
@@ -38,7 +39,8 @@ struct PodcastsController: RouteCollection {
         let podcast = try await Podcast.query(on: req.db)
             .filter(\.$id == id)
             .with(\.$episodes)
-            .when(query._config != .none, then: { $0.with(\.$config) })
+            .when(query._config != .none) { $0.with(\.$config) }
+            .when(query._includeRSSConfig) { $0.with(\.$rssConfig) }
             .first()
             .unwrap(or: Errors.unknownID)
         
@@ -77,10 +79,16 @@ extension PodcastsController {
     struct GetPodcastQueryParameters: Content {
         var config: ConfigMode?
         var _config: ConfigMode { config ?? .override }
+
+        var includeRSSConfig: Bool?
+        var _includeRSSConfig: Bool { includeRSSConfig ?? false }
     }
 
     struct GetAllPodcastsQueryParameters: Content {
         var config: ConfigMode?
         var _config: ConfigMode { config ?? .override }
+
+        var includeRSSConfig: Bool?
+        var _includeRSSConfig: Bool { includeRSSConfig ?? false }
     }
 }

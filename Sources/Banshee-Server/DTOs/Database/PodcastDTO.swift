@@ -2,13 +2,13 @@ import Vapor
 
 struct PodcastDTO: Content {
     var id: UUID
-    var rssFeedURL: URL?
     var title: String
     var link: URL?
     var language: String
     var imageURL: URL?
     var description: String
     var config: PodcastConfigDTO?
+    var rssConfig: RSSConfigDTO?
     var episodes: [EpisodeDTO]?
 }
 
@@ -18,7 +18,6 @@ extension PodcastDTO {
         else { throw Abort(.internalServerError, reason: "Podcast not persisted before response.") }
 
         self.id = id
-        self.rssFeedURL = podcast.rssFeedURL
         self.title = podcast.title
         self.link = podcast.link
         self.language = podcast.language
@@ -28,6 +27,7 @@ extension PodcastDTO {
         
         // Verify if config was eager-loaded.
         self.config = podcast.$config.isNotLoaded ? nil : PodcastConfigDTO(from: podcast.config)
+        self.rssConfig = podcast.$rssConfig.isNotLoaded ? nil : try RSSConfigDTO(from: podcast.rssConfig) 
 
         if overrideWithConfig, let config {
             self.title ?= config.title

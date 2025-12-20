@@ -16,27 +16,31 @@ struct RSSFeedController: RouteCollection {
             .content.decode(RSS.self)
 
         // Save Podcast
-        let podcast = rssResponse.channel.toModel(rssFeedURL: feedRequest.url)
+        var podcast = rssResponse.channel.toModel()
         try await podcast.save(on: req.db)
         try await podcast.$episodes.create(rssResponse.channel.item.map { $0.toModel() }, on: req.db)
+        try await podcast.$rssConfig.create(RSSConfig(url: feedRequest.url), on: req.db)
+
+        podcast = try await Podcast.query(on: req.db)
+            .filter(\.$id == podcast.id!)
+            .with(\.$rssConfig)
+            .first()
+            .unwrap(or: Errors.failedToCreatePodcast)
 
         return try PodcastDTO(from: podcast, overrideWithConfig: false)
     }
 
-    private func getAllFeeds(req: Request) async throws -> [FeedResponse] {
-        let podcasts = try await Podcast.query(on: req.db)
-            .filter(\.$rssFeedURL != nil)
-            // Request only required fields
-            .field(\.$id).field(\.$rssFeedURL).field(\.$title)
+    private func getAllFeeds(req: Request) async throws -> [RSSConfigDTO] {
+        try await RSSConfig.query(on: req.db)
+            .with(\.$podcast)
             .all()
+            .compactMap { try RSSConfigDTO(from: $0) }
+    }
+}
 
-        return try podcasts.map { podcast in
-            FeedResponse(
-                id: try podcast.requireID(), 
-                url: podcast.rssFeedURL!, 
-                title: podcast.title
-            )
-        }
+extension RSSFeedController {
+    enum Errors {
+        static var failedToCreatePodcast: Abort { Abort(.internalServerError, reason: "Failed to create podcast & rss feed") }
     }
 }
 
@@ -45,13 +49,4 @@ extension RSSFeedController {
     struct CreatePodcastFeedRequest: Content {
         let url: URL
     } 
-}
-
-// MARK: - Response Objects
-extension RSSFeedController {
-    struct FeedResponse: Content {
-        let id: UUID
-        let url: URL
-        let title: String
-    }
 }

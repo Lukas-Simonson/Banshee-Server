@@ -44,6 +44,7 @@ private func configureDatabase(_ app: Application) async throws {
     app.migrations.add(User.Migration.Create())
     app.migrations.add(Podcast.Migration.Create())
     app.migrations.add(PodcastConfig.Migration.Create())
+    app.migrations.add(RSSConfig.Migration.Create())
     app.migrations.add(Episode.Migration.Create())
 }
 

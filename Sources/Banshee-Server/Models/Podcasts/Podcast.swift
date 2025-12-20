@@ -5,9 +5,6 @@ final class Podcast: Model, @unchecked Sendable {
     @ID
     var id: UUID?
 
-    @Field(key: "rssFeedURL")
-    var rssFeedURL: URL?
-
     @Field(key: "title")
     var title: String
 
@@ -23,8 +20,13 @@ final class Podcast: Model, @unchecked Sendable {
     @Field(key: "description")
     var description: String
 
+    // MARK: Relationships
+
     @OptionalChild(for: \.$podcast)
     var config: PodcastConfig?
+
+    @OptionalChild(for: \.$podcast)
+    var rssConfig: RSSConfig?
 
     @Children(for: \.$podcast)
     var episodes: [Episode]
@@ -42,9 +44,7 @@ extension Podcast.Migration {
         func prepare(on database: any Database) async throws {
             try await database.schema("podcast")
                 .id()
-                .field("rssFeedURL", .string)
                 .field("title", .string, .required)
-                .unique(on: "rssFeedURL", "title") // Title / rssFeedURL must be a unique pair
                 .field("link", .string)
                 .field("language", .string, .required)
                 .field("imageURL", .string)
