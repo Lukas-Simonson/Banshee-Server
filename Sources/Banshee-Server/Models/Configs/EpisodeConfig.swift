@@ -11,6 +11,12 @@ final class EpisodeConfig: Model, @unchecked Sendable {
     @Field(key: "description")
     var description: String?
 
+    @Field(key: "season")
+    var season: String?
+
+    @Field(key: "episodeNumber")
+    var episodeNumber: Int?
+
     @Parent(key: "episodeID")
     var episode: Episode
 }
@@ -29,6 +35,8 @@ extension EpisodeConfig.Migration {
                 .id()
                 .field("title", .string)
                 .field("description", .string)
+                .field("season", .string)
+                .field("episodeNumber", .int64)
                 .field("episodeID", .uuid, .references("episode", "id", onDelete: .cascade))
                 .create()
         }

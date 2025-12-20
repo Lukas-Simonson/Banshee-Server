@@ -1,5 +1,5 @@
 {
-  "originHash" : "95d2055f5fa15ddb6815c381dddceeaf050663abcfd1fc91d8f28c125647c7b3",
+  "originHash" : "694ef78de604ecc5b317379737f1969550db7647568ab5b99882da60960d3d5b",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "6f3615ccf2ac3c2ae0c8087d527546e9544a43dd",
         "version" : "1.21.0"
+      }
+    },
+    {
+      "identity" : "banshee-xmlcoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lukas-Simonson/Banshee-XMLCoder",
+      "state" : {
+        "branch" : "main",
+        "revision" : "b392314a5e9067db4e716ffdc5248fdced1d7c95"
       }
     },
     {
@@ -323,15 +332,6 @@
       "state" : {
         "revision" : "8666c92dbbb3c8eefc8008c9c8dcf50bfd302167",
         "version" : "2.16.1"
-      }
-    },
-    {
-      "identity" : "xmlcoder",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/CoreOffice/XMLCoder",
-      "state" : {
-        "revision" : "b1e944cbd0ef33787b13f639a5418d55b3bed501",
-        "version" : "0.17.1"
       }
     }
   ],
