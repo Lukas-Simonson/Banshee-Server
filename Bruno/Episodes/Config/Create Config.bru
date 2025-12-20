@@ -1,0 +1,32 @@
+meta {
+  name: Create Config
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/api/episodes/:episodeID/config
+  body: json
+  auth: inherit
+}
+
+params:path {
+  episodeID: 
+}
+
+body:json {
+  {
+    "title": "{{configTitle}}",
+    "description": "{{configDescription}}"
+  }
+}
+
+vars:pre-request {
+  configTitle: 
+  configDescription: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

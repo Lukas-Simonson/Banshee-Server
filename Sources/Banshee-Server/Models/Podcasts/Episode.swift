@@ -19,6 +19,9 @@ final class Episode: Model, @unchecked Sendable {
 
     @Parent(key: "podcastID")
     var podcast: Podcast
+
+    @OptionalChild(for: \.$episode)
+    var config: EpisodeConfig?
 }
 
 // MARK: - Model Conformance
@@ -29,7 +32,7 @@ extension Episode {
 }
 
 extension Episode.Migration {
-        struct Create: AsyncMigration {
+    struct Create: AsyncMigration {
         func prepare(on database: any Database) async throws {
             try await database.schema("episode")
                 .id()
