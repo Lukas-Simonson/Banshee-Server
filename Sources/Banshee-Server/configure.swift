@@ -11,6 +11,7 @@ public func configure(_ app: Application) async throws {
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     try await configureXML(app)
     try await configureAuth(app)
+    try await configureDownloads(app)
     try await configureDatabase(app)
 
     // register routes
@@ -27,6 +28,10 @@ private func configureXML(_ app: Application) async throws {
 
 private func configureAuth(_ app: Application) async throws {
     await app.jwt.keys.add(hmac: HMACKey(stringLiteral: try getEnvironmentValue("JWT_SECRET")), digestAlgorithm: .sha256)
+}
+
+private func configureDownloads(_ app: Application) async throws {
+    app.downloadManager = DownloadManager()
 }
 
 private func configureDatabase(_ app: Application) async throws {
