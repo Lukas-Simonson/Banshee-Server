@@ -18,7 +18,6 @@ struct EpisodeConfigController: RouteCollection {
             .with(\.$config)
         
         var episode = try await query.first().unwrap(or: Errors.unknownID)
-        // var podcast = try await query.first().unwrap(or: Errors.unknownID)
 
         if let configID = episode.config?.id {
             try await config.toModel(with: configID).update(on: req.db)
