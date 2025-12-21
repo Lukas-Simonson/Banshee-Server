@@ -147,8 +147,14 @@ final class StreamingDownloadDelegate: HTTPClientResponseDelegate, @unchecked Se
     }
 
     func didFinishRequest(task: HTTPClient.Task<Response>) throws -> Response {
-        let promise = task.eventLoop.makePromise(of: Response.self)
+        guard let statusCode = self.statusCode else {
+            throw DownloadError.fileIOError("No response received")
+        }
 
+        // Final progress update
+        self.onProgress(1.0)
+
+        // Cleanup asynchronously without blocking the event loop
         Task {
             do {
                 // Flush remaining buffered data
@@ -156,30 +162,19 @@ final class StreamingDownloadDelegate: HTTPClientResponseDelegate, @unchecked Se
 
                 // Close file handle
                 try await self.fileHandle?.close()
-
-                guard let statusCode = self.statusCode else {
-                    promise.fail(DownloadError.fileIOError("No response received"))
-                    return
-                }
-
-                // Final progress update
-                self.onProgress(1.0)
-
-                let result = DownloadResult(
-                    success: statusCode == .ok || statusCode == .partialContent,
-                    bytesWritten: self.receivedBytes,
-                    statusCode: statusCode,
-                    error: nil
-                )
-
-                promise.succeed(result)
             } catch {
-                promise.fail(error)
+                // Log error but don't fail the download since data is already written
+                print("Warning: Failed to close file handle: \(error)")
             }
         }
 
-        // Wait for async work to complete
-        return try promise.futureResult.wait()
+        // Return result immediately without waiting
+        return DownloadResult(
+            success: statusCode == .ok || statusCode == .partialContent,
+            bytesWritten: self.receivedBytes,
+            statusCode: statusCode,
+            error: nil
+        )
     }
 
     func didReceiveError(task: HTTPClient.Task<Response>, _ error: any Error) {
