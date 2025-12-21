@@ -37,6 +37,10 @@ struct EpisodeDownloadController: RouteCollection {
 
             let destination = "\(req.downloadManager.storageBasePath)/\(podcastFolder)/\(seasonFolder)/\(episodeFileName).\(fileExtension)"
 
+            // NOTE: This is very slow, find a better way to handle this situation.
+            config.localURL = destination
+            try await config.save(on: req.db)
+            
             results.started.append(id)
             requests.append(
                 DownloadRequest(
@@ -46,7 +50,7 @@ struct EpisodeDownloadController: RouteCollection {
                 )
             )
         }
-
+        
         try await req.downloadManager.download(requests)
 
         return results

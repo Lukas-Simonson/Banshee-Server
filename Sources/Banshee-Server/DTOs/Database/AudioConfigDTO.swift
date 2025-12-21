@@ -3,7 +3,7 @@ import Vapor
 struct AudioConfigDTO: Content {
     var id: UUID
     var remoteURL: URL?
-    var localURL: URL?
+    var localURL: String?
     var length: Int64?
     var type: String?
     var episodeID: UUID

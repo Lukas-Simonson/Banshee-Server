@@ -2,6 +2,6 @@ import Foundation
 
 extension Int {
     func pad(_ count: Int = 3) -> String {
-        String(format: "$0\(count)", self)
+        String(format: "%0\(count)d", self)
     }
 }

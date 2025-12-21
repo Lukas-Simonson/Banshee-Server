@@ -56,9 +56,13 @@ actor DownloadManager {
             }
 
             Task {
-                logger?.info("Starting download for \(request.destinationPath)")
-                do { try await startDownload(request) }
-                catch { logger?.error("\(error)") }
+                logger?.info("Starting download for \(request.remoteURL) into \(request.destinationPath)")
+                do { 
+                    try await startDownload(request)
+                    logger?.info("Successfully Downloaded file at: \(request.destinationPath)")
+                } catch { 
+                    logger?.error("\(error)")
+                }
             }
         }
     }

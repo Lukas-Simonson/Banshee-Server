@@ -9,7 +9,7 @@ final class AudioConfig: Model, @unchecked Sendable {
     var remoteURL: URL?
 
     @Field(key: "localURL")
-    var localURL: URL?
+    var localURL: String?
 
     @Field(key: "length")
     var length: Int64?

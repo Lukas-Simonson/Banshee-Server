@@ -1,0 +1,20 @@
+meta {
+  name: Stream Audio
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/api/episodes/:episodeID/audio
+  body: none
+  auth: inherit
+}
+
+params:path {
+  episodeID: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
