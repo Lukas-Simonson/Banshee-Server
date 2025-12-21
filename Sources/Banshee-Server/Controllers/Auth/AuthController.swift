@@ -34,7 +34,7 @@ struct AuthController: RouteCollection {
         )
     }
 
-    private func login(req: Request) async throws -> [String: String] {
+    private func login(req: Request) async throws -> UserDTO {
         let authRequest = try req.content.decode(AuthRequest.self)
 
         guard let user = try await User.query(on: req.db)
@@ -50,7 +50,10 @@ struct AuthController: RouteCollection {
             role: user.role
         )
 
-        return try await ["token": req.jwt.sign(payload)]
+        return try await UserDTO(
+            from: user,
+            with: req.jwt.sign(payload)
+        )
     }
 }
 
