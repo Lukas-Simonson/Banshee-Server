@@ -10,11 +10,14 @@ actor DownloadManager {
     /// Current Download Tasks, keyed by the download request ID
     private(set) var tasks = [UUID: FileDownload]()
 
+    /// Base directory for episode storage
+    let storageBasePath: String
+
+    /// The logger to use for logging
+    private var logger: Logger?
+
     /// Dedicated HTTP client for streaming downloads
     private let httpClient: HTTPClient
-
-    /// Base directory for episode storage
-    private let storageBasePath: String
 
     /// Maximum number of concurrent downloads
     private let maxConcurrentDownloads: Int = 3
@@ -25,13 +28,39 @@ actor DownloadManager {
     /// Queue of pending downloads waiting for a slot
     private var pendingQueue: [DownloadRequest] = []
 
-    init(storageBasePath: String = "Storage/episodes") {
+    init(storageBasePath: String = "Storage/episodes", logger: Logger?) {
         self.storageBasePath = storageBasePath
         self.httpClient = HTTPClient(eventLoopGroupProvider: .singleton)
+        self.logger = logger
     }
 
     deinit {
         try? httpClient.syncShutdown()
+    }
+
+    /// Queues file downloads from a remote URL to local storage. 
+    /// 
+    /// Queues each request in a Task to provide a non-blocking approach.
+    /// 
+    /// - Parameter requests: An Array of request containing a remote URL and destination path.
+    /// - Throws: DownloadError if download fails or is already in progress.
+    func download(_ requests: [DownloadRequest]) async throws {
+        for request in requests {
+            if tasks[request.id] != nil {
+                throw DownloadError.alreadyDownloading(request.id)
+            }
+
+            if activeCount >= maxConcurrentDownloads {
+                pendingQueue.append(request)
+                return
+            }
+
+            Task {
+                logger?.info("Starting download for \(request.destinationPath)")
+                do { try await startDownload(request) }
+                catch { logger?.error("\(error)") }
+            }
+        }
     }
 
     /// Downloads a file from a remote URL to local storage

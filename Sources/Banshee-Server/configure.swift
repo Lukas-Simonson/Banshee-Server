@@ -35,7 +35,7 @@ private func configureAuth(_ app: Application) async throws {
 
 private func configureDownloads(_ app: Application) async throws {
     let path = try getEnvironmentValue("STORAGE_LOCATION")
-    app.downloadManager = DownloadManager(storageBasePath: path)
+    app.downloadManager = DownloadManager(storageBasePath: path, logger: app.logger)
 }
 
 private func configureDatabase(_ app: Application) async throws {

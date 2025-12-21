@@ -8,7 +8,7 @@ struct DownloadRequest: Sendable, Hashable {
     /// Remote URL to download from
     let remoteURL: URL
 
-    /// Local file system path where the file should be saved
+    /// Local relative file system path where the file should be saved
     let destinationPath: String
 
     /// Expected file size in bytes (optional, used for progress tracking)
