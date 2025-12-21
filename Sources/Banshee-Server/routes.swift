@@ -6,5 +6,6 @@ func routes(_ app: Application) throws {
         try api.register(collection: AuthController())
         try api.register(collection: PodcastsController())
         try api.register(collection: EpisodesController())
+        try api.register(collection: InfoController())
     }
 }
