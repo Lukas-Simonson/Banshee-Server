@@ -11,6 +11,7 @@ public func configure(_ app: Application) async throws {
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     try await configureXML(app)
     try await configureAuth(app)
+    try await configureDownloads(app)
     try await configureDatabase(app)
 
     // register routes
@@ -19,6 +20,9 @@ public func configure(_ app: Application) async throws {
 
 private func configureXML(_ app: Application) async throws {
     let xmlDecoder = XMLDecoder.rssDecoder()
+
+    xmlDecoder.shouldProcessNamespaces = true
+    xmlDecoder.namespaceFilteringStrategy = .stripByPrefix(["itunes"])
     
     ContentConfiguration.global.use(decoder: xmlDecoder, for: .xml)
     ContentConfiguration.global.use(decoder: xmlDecoder, for: .init(type: "application", subType: "rss+xml"))
@@ -27,6 +31,11 @@ private func configureXML(_ app: Application) async throws {
 
 private func configureAuth(_ app: Application) async throws {
     await app.jwt.keys.add(hmac: HMACKey(stringLiteral: try getEnvironmentValue("JWT_SECRET")), digestAlgorithm: .sha256)
+}
+
+private func configureDownloads(_ app: Application) async throws {
+    let path = try getEnvironmentValue("STORAGE_LOCATION")
+    app.downloadManager = DownloadManager(storageBasePath: path, logger: app.logger)
 }
 
 private func configureDatabase(_ app: Application) async throws {
@@ -50,6 +59,7 @@ private func configureDatabase(_ app: Application) async throws {
     
     app.migrations.add(Episode.Migration.Create())
     app.migrations.add(EpisodeConfig.Migration.Create())
+    app.migrations.add(AudioConfig.Migration.Create())
 }
 
 private func getEnvironmentValue(_ key: String) throws -> String {

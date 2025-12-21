@@ -11,6 +11,7 @@ get {
 }
 
 params:query {
+  ~includeEpisodeAudio: true
   ~episodeConfig: override
   ~config: override
   ~includeRSSFeed: false
@@ -31,5 +32,6 @@ docs {
   - **config**: An enumeration declaring how to include the user configuration in the response. ('none', 'include', 'override')(default: 'override')
   - **includeRSSConfig**: A boolean value declaring if the RSSConfig should be included in the response. (default: 'false')
   - **episodeConfig**: An enumeration declaring how to include each episode configuration in the response. ('none', 'include', 'override')(default: 'override')
+  - **includeEpisodeAudio**: A boolean value declaring if each episodes AudioConfig should be included in the response. (default: 'true')
   
 }

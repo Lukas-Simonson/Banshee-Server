@@ -18,7 +18,14 @@ struct RSSFeedController: RouteCollection {
         // Save Podcast
         var podcast = rssResponse.channel.toModel()
         try await podcast.save(on: req.db)
-        try await podcast.$episodes.create(rssResponse.channel.item.map { $0.toModel() }, on: req.db)
+
+        // TODO: See if there is a more efficient way to do this.
+        for episode in rssResponse.channel.item {
+            let model = episode.toModel()
+            try await podcast.$episodes.create(model, on: req.db)
+            try await model.$audioConfig.create(episode.enclosure.toModel(), on: req.db)
+        }
+
         try await podcast.$rssConfig.create(RSSConfig(url: feedRequest.url), on: req.db)
 
         podcast = try await Podcast.query(on: req.db)
