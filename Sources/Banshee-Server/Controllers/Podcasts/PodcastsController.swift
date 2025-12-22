@@ -3,21 +3,23 @@ import Vapor
 
 struct PodcastsController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
-        try routes.grouped("podcasts").group(UserAuthenticator()) { podcasts in
-            podcasts.get(use: getAllPodcasts)
-            
-            podcasts.group(":podcastID") { podcastID in
-                podcastID.get(use: getPodcast)
-                
-                // Admin only routes
-                podcastID.group(AdminAuthMiddleware()) { podcastID in
-                    podcastID.delete(use: deletePodcast)
+        try routes.grouped("podcasts")
+            .grouped(UserAuthenticator())
+            .group(AuthPayload.guardMiddleware()) { podcasts in
+                podcasts.get(use: getAllPodcasts)
+
+                podcasts.group(":podcastID") { podcastID in
+                    podcastID.get(use: getPodcast)
+
+                    // Admin only routes
+                    podcastID.group(AdminAuthMiddleware()) { podcastID in
+                        podcastID.delete(use: deletePodcast)
+                    }
                 }
+
+                try podcasts.register(collection: PodcastConfigController())
+                try podcasts.register(collection: RSSFeedController())
             }
-            
-            try podcasts.register(collection: PodcastConfigController())
-            try podcasts.register(collection: RSSFeedController())
-        }
     }
 
     private func getAllPodcasts(req: Request) async throws -> [PodcastDTO] {
@@ -53,10 +55,12 @@ struct PodcastsController: RouteCollection {
             .unwrap(or: Errors.unknownID)
 
         req.logger.info("\(query)")
-        
+
         return try PodcastDTO(
-            from: podcast, 
-            with: podcast.episodes.map { try EpisodeDTO(from: $0, overrideWithConfig: query._episodeConfig == .override) },
+            from: podcast,
+            with: podcast.episodes.map {
+                try EpisodeDTO(from: $0, overrideWithConfig: query._episodeConfig == .override)
+            },
             overrideWithConfig: query._config == .override
         )
     }
@@ -67,7 +71,7 @@ struct PodcastsController: RouteCollection {
 
         let query = Podcast.query(on: req.db)
             .filter(\.$id == id)
-        
+
         guard try await query.count() > 0
         else { throw Errors.unknownID }
 
