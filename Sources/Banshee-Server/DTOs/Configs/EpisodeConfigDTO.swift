@@ -4,6 +4,7 @@ struct EpisodeConfigDTO: Content {
     var id: UUID?
     var title: String?
     var description: String?
+    var imageURL: URL?
     var season: String?
     var episodeNumber: Int?
     var episodeID: UUID?
@@ -19,6 +20,7 @@ extension EpisodeConfigDTO {
         self.id = id
         self.title = config.title
         self.description = config.description
+        self.imageURL = config.imageURL
         self.season = config.season
         self.episodeNumber = config.episodeNumber
         self.episodeID = config.$episode.id
@@ -35,6 +37,7 @@ extension EpisodeConfigDTO {
 
         config.title = title
         config.description = description
+        config.imageURL = imageURL
         config.season = season
         config.episodeNumber = episodeNumber
 

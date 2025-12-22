@@ -5,6 +5,7 @@ struct EpisodeDTO: Content {
     var title: String
     var pubDate: Date
     var description: String
+    var imageURL: URL?
     var season: String?
     var episodeNumber: Int?
 
@@ -23,6 +24,7 @@ extension EpisodeDTO {
         self.title = episode.title
         self.pubDate = episode.pubDate
         self.description = episode.description
+        self.imageURL = episode.imageURL
         self.season = episode.season
         self.episodeNumber = episode.episodeNumber
 
@@ -34,6 +36,9 @@ extension EpisodeDTO {
         if overrideWithConfig, let config {
             self.title ?= config.title
             self.description ?= config.description
+            self.imageURL ?= config.imageURL
+            self.season ?= config.season
+            self.episodeNumber ?= config.episodeNumber
 
             // Overriding with config excludes the config from the response.
             self.config = nil

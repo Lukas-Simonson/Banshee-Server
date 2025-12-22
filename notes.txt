@@ -8,64 +8,8 @@ https://www.thisamericanlife.org/podcast/rss.xml
 https://podcastfeeds.nbcnews.com/dateline-nbc
 https://feeds.megaphone.fm/thispastweekend
 https://feeds.simplecast.com/qm_9xx0g
-https://rss.acast.com/dungeons-and-daddies
 https://feeds.megaphone.fm/GLT1412515089
 
-## Config Models
-
-Models that have a One to One relationship with their respective components.
-So for example: Podcast would have a PodcastConfig, Episode would have an EpisodeConfig, etc.
-
-These will serve as a way for the user to customize the components, and serve as a place for extra
-config information to live. Acting as a non-destructive way to interact with the information.
-
-These configs would include overrides for information, so title, season, episode, etc. This allows
-the user to make updates that wouldn't be overwritten by the RSS feed, and allows us to keep all information
-about the contents relevant.
-
-Models may also have multiple configs where needed, the one key item I would like to point out that fits here
-would be Podcast. Podcast would need to regular configuration and overrides, but also I would like to make it
-have an RSS config for podcasts that are gathred using an RSS feed. This should allow users to add their own podcasts
-manually if they see fit!
-
-## Audio File storage
-
-I want to store the audio files in a way that a user could navigate the folder structure and have no issues
-figuring out what is what. I would like this server to save files in a way that even without the application,
-the files continue living on in a usable manner.
-
-Currently I am thinking of ways to format the file names. My current structure thought is either
-
-- [S001][E001] A Man and His Handshake.mp3
-- S001_E001_AManAndHisHandshake.mp3
-
-The first option I believe looks the nicest and would be easier to implement; however, it could cause compatability issues.
-The second option would be more compatible as it only uses widely acceptable characters for file names.
-
-I do know that I want to structure things in a traditional Folder-File structure where the folder name would be the name of the podcast, so something like:
-
-Dungeons And Daddies /
-	[S001][E001] A Man and His Handshake.mp3
-	[S001][E002] The Ties That Bind.mp3
-
-We could also get wild and do seasons as folders. This would structure things more, but would make things more difficult non-episodic podcasts potentially.
-
-Dungeons And Daddies /
-	Season 001 /
-		[S001][E001] A Man and His handshake.mp3
-		[S001][E002] The Ties That Bind.mp3
-	Season 002 /
-		[S002][E001] Dungeon and DADDIES.mp3
-	Other /
-		[S??][E??]
-
-I think it is also important to decide how we want to structure things with ordering. Do we enforce a numbered system for season / episode? We could allow users to configure a custom season episode format.
-This could be beneficial as it would allow users to specify things that are not in a specific order.
-
-Dungeons And Daddies /
-	Fetch Quest /
-		[Fetch Quest][E001] All Dogs Go To Faerun.mp3
-	Season One /
-		[Season One][E001] A Man and his handshake.mp3
-
-This has the downside of added complexity, and a loss of standard ordering.
+- Most Important Podcast: https://rss.acast.com/dungeons-and-daddies
+- Short Podcast Episodes: http://feeds.libsyn.com/65598/rss
+- Longest Running Podcast Ever: https://feeds.libsyn.com/478344/rss
