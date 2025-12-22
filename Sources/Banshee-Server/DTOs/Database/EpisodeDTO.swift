@@ -24,7 +24,6 @@ extension EpisodeDTO {
         self.title = episode.title
         self.pubDate = episode.pubDate
         self.description = episode.description
-        self.imageURL = episode.imageURL
         self.season = episode.season
         self.episodeNumber = episode.episodeNumber
 
@@ -36,7 +35,7 @@ extension EpisodeDTO {
         if overrideWithConfig, let config {
             self.title ?= config.title
             self.description ?= config.description
-            self.imageURL ?= config.imageURL
+            self.imageURL = config.imageURL
             self.season ?= config.season
             self.episodeNumber ?= config.episodeNumber
 

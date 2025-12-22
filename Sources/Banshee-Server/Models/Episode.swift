@@ -14,9 +14,6 @@ final class Episode: Model, @unchecked Sendable {
     @Field(key: "description")
     var description: String
 
-    @Field(key: "imageURL")
-    var imageURL: URL?
-
     @Field(key: "season")
     var season: String?
 
@@ -48,7 +45,6 @@ extension Episode.Migration {
                 .field("title", .string, .required)
                 .field("pubDate", .datetime, .required)
                 .field("description", .string, .required)
-                .field("imageURL", .string)
                 .field("season", .string)
                 .field("episodeNumber", .int64)
                 .field("podcastID", .uuid, .references("podcast", "id", onDelete: .cascade))

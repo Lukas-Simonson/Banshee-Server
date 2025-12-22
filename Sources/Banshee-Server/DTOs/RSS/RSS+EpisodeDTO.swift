@@ -24,7 +24,6 @@ extension RSS.EpisodeDTO {
         episode.title = title
         episode.pubDate = pubDate
         episode.description = description
-        episode.imageURL = image?.url
         episode.season = season
         episode.episodeNumber = self.episode
 

@@ -17,13 +17,15 @@ params:path {
 body:json {
   {
     "title": "{{configTitle}}",
-    "description": "{{configDescription}}"
+    "description": "{{configDescription}}",
+    "imageURL": "{{configImageURL}}"
   }
 }
 
 vars:pre-request {
   configTitle: 
   configDescription: 
+  configImageURL: 
 }
 
 settings {
