@@ -30,6 +30,22 @@ final class Episode: Model, @unchecked Sendable {
     var audioConfig: AudioConfig?
 }
 
+extension Episode {
+    func update(from dto: RSS.EpisodeDTO) {
+        self.title = dto.title
+        self.pubDate = dto.pubDate
+        self.description = dto.description
+        self.season = dto.season
+        self.episodeNumber = dto.episode 
+    }
+
+    static func != (lhs: Episode, rhs: RSS.EpisodeDTO) -> Bool {
+        lhs.title != rhs.title || lhs.pubDate != rhs.pubDate ||
+        lhs.description != rhs.description || lhs.season != rhs.season ||
+        lhs.episodeNumber != rhs.episode
+    }
+}
+
 // MARK: - Model Conformance
 extension Episode {
     static let schema = "episode"

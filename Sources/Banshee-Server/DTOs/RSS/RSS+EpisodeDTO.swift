@@ -7,7 +7,6 @@ extension RSS {
         let enclosure: EnclosureDTO
         let link: URL?
         let image: ImageDTO?
-        let explicit: Bool?
         let season: String?
         let episode: Int?
         let description: String

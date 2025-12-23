@@ -4,6 +4,7 @@ import FluentPostgresDriver
 import JWT
 import XMLCoder
 import Vapor
+import QueuesFluentDriver
 
 // configures your application
 public func configure(_ app: Application) async throws {
@@ -13,6 +14,7 @@ public func configure(_ app: Application) async throws {
     try await configureAuth(app)
     try await configureDownloads(app)
     try await configureDatabase(app)
+    try await configureJobs(app)
 
     // register routes
     try routes(app)
@@ -60,6 +62,17 @@ private func configureDatabase(_ app: Application) async throws {
     app.migrations.add(Episode.Migration.Create())
     app.migrations.add(EpisodeConfig.Migration.Create())
     app.migrations.add(AudioConfig.Migration.Create())
+}
+
+private func configureJobs(_ app: Application) async throws {
+    // Jobs Migration
+    app.migrations.add(JobModelMigration())
+
+    app.queues.use(.fluent())
+
+    app.queues.schedule(RSSFeedJob())
+        .hourly()
+        .at(0)
 }
 
 private func getEnvironmentValue(_ key: String) throws -> String {

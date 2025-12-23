@@ -21,6 +21,8 @@ let package = Package(
         .package(url: "https://github.com/Lukas-Simonson/Banshee-XMLCoder", branch: "main"),
         // 🌐 Async HTTP client for streaming downloads.
         .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.9.0"),
+        // Queues Driver ontop of Fluent.
+        .package(url: "https://github.com/vapor-community/vapor-queues-fluent-driver.git", from: "3.0.0"),
     ],
     targets: [
         .executableTarget(
@@ -35,6 +37,7 @@ let package = Package(
                 .product(name: "JWT", package: "jwt"),
                 .product(name: "XMLCoder", package: "Banshee-XMLCoder"),
                 .product(name: "AsyncHTTPClient", package: "async-http-client"),
+                .product(name: "QueuesFluentDriver", package: "vapor-queues-fluent-driver"),
             ],
             swiftSettings: swiftSettings
         ),

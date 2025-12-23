@@ -32,6 +32,28 @@ final class Podcast: Model, @unchecked Sendable {
     var episodes: [Episode]
 }
 
+extension Podcast {
+    func update(from dto: RSS.PodcastDTO) {
+        self.title = dto.title
+        self.link = dto.link
+        self.language = dto.language
+        self.imageURL = dto.image?.url
+        self.description = dto.description
+    }
+
+    static func == (lhs: Podcast, rhs: RSS.PodcastDTO) -> Bool {
+        lhs.title == rhs.title && lhs.link == rhs.link &&
+        lhs.language == rhs.language && lhs.imageURL == rhs.image?.url &&
+        lhs.description == rhs.description
+    }
+
+    static func != (lhs: Podcast, rhs: RSS.PodcastDTO) -> Bool {
+        lhs.title != rhs.title || lhs.link != rhs.link ||
+        lhs.language != rhs.language || lhs.imageURL != rhs.image?.url ||
+        lhs.description != rhs.description
+    }
+}
+
 // MARK: - Model Conformance
 extension Podcast {
     static let schema = "podcast"
