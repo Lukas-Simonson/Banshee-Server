@@ -5,12 +5,49 @@ import Vapor
 struct AuthController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
         routes.group("auth") { auth in
-            auth.post("register", use: register)
-            auth.post("login", use: login)
+            routes.post("setup", use: setup)
+
+            routes.group(UserAuthenticator()) { auth in
+                routes.post("login", use: login)
+
+                routes.group(AdminAuthMiddleware()) { auth in
+                    auth.post("register", use: register)
+                }
+            }
         }
     }
 
-    // TODO: Require Admin Role Auth to register new users.
+    private func setup(req: Request) async throws -> UserDTO {
+        let registration = try req.content.decode(RegistrationRequest.self)
+
+        guard try await User.query(on: req.db)
+            .filter(\.$role == .admin)
+            .count() == 0
+        else { throw Errors.adminAlreadyCreated }
+
+        guard registration.role == .admin
+        else { throw Errors.invalidSetupRequest }
+
+        let user = User(
+            username: registration.username,
+            passwordHash: try Bcrypt.hash(registration.password),
+            role: .admin
+        )
+
+        try await user.save(on: req.db)
+
+        let payload = AuthPayload(
+            subject: SubjectClaim(value: user.id!.uuidString),
+            expiration: ExpirationClaim(value: .distantFuture),
+            role: .admin
+        )
+
+        return try await UserDTO(
+            from: user,
+            with: req.jwt.sign(payload)
+        )
+    }
+
     private func register(req: Request) async throws -> UserDTO {
         let registration = try req.content.decode(RegistrationRequest.self)
 
@@ -59,6 +96,8 @@ struct AuthController: RouteCollection {
 
 extension AuthController {
     enum Errors {
+        static var adminAlreadyCreated: Abort { Abort(.badRequest, reason: "An admin account already exists, please use the /api/auth/register endpoint") }
+        static var invalidSetupRequest: Abort { Abort(.badRequest, reason: "The /api/auth/setup endpoint can only be used to create admin users") }
         static var invalidCredentials: Abort { Abort(.unauthorized, reason: "Invalid username or password provided") }
     }
 }
