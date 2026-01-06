@@ -1,0 +1,15 @@
+meta {
+  name: Setup
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseURL}}/api/auth/setup
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
