@@ -1,10 +1,15 @@
 import NIOSSL
 import Fluent
-import FluentPostgresDriver
+import FluentSQLiteDriver
 import JWT
 import XMLCoder
 import Vapor
 import QueuesFluentDriver
+
+// Environment
+//  - JWT_SECRET: The secret key to use for JWT.
+//  - STORAGE_PATH: Where downloaded files should be stored.
+//  - METADATA_PATH: Where metadata files should be stored.
 
 // configures your application
 public func configure(_ app: Application) async throws {
@@ -36,21 +41,24 @@ private func configureAuth(_ app: Application) async throws {
 }
 
 private func configureDownloads(_ app: Application) async throws {
-    let path = try getEnvironmentValue("STORAGE_LOCATION")
+    let path = try getEnvironmentValue("STORAGE_PATH")
     app.downloadManager = DownloadManager(storageBasePath: path, logger: app.logger)
 }
 
 private func configureDatabase(_ app: Application) async throws {
-    let configuration = DatabaseConfigurationFactory.postgres(configuration: SQLPostgresConfiguration(
-        hostname: try getEnvironmentValue("DATABASE_HOST"),
-        port: Int(try getEnvironmentValue("DATABASE_PORT")) ?? SQLPostgresConfiguration.ianaPortNumber,
-        username: try getEnvironmentValue("DATABASE_USERNAME"),
-        password: try getEnvironmentValue("DATABASE_PASSWORD"),
-        database: try getEnvironmentValue("DATABASE_NAME"),
-        tls: .prefer(try .init(configuration: .clientDefault)) 
-    ))
+//    let configuration = DatabaseConfigurationFactory.postgres(configuration: SQLPostgresConfiguration(
+//        hostname: try getEnvironmentValue("DATABASE_HOST"),
+//        port: Int(try getEnvironmentValue("DATABASE_PORT")) ?? SQLPostgresConfiguration.ianaPortNumber,
+//        username: try getEnvironmentValue("DATABASE_USERNAME"),
+//        password: try getEnvironmentValue("DATABASE_PASSWORD"),
+//        database: try getEnvironmentValue("DATABASE_NAME"),
+//        tls: .prefer(try .init(configuration: .clientDefault)) 
+//    ))
+//
+//    app.databases.use(configuration, as: .psql)
 
-    app.databases.use(configuration, as: .psql)
+    let metadata = try getEnvironmentValue("METADATA_PATH")
+    app.databases.use(.sqlite(.file("\(metadata)/banshee.sqlite")), as: .sqlite)
 
     // Migrations
     app.migrations.add(User.Migration.Create())
@@ -62,13 +70,15 @@ private func configureDatabase(_ app: Application) async throws {
     app.migrations.add(Episode.Migration.Create())
     app.migrations.add(EpisodeConfig.Migration.Create())
     app.migrations.add(AudioConfig.Migration.Create())
+
+    try await app.autoMigrate()
 }
 
 private func configureJobs(_ app: Application) async throws {
     // Jobs Migration
     app.migrations.add(JobModelMigration())
 
-    app.queues.use(.fluent())
+    app.queues.use(.fluent(.sqlite))
 
     app.queues.schedule(RSSFeedJob())
         .hourly()

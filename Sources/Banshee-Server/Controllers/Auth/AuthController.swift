@@ -5,10 +5,10 @@ import Vapor
 struct AuthController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
         routes.group("auth") { auth in
-            routes.post("setup", use: setup)
+            auth.post("setup", use: setup)
 
-            routes.group(UserAuthenticator()) { auth in
-                routes.post("login", use: login)
+            auth.group(UserAuthenticator()) { auth in
+                auth.post("login", use: login)
 
                 routes.group(AdminAuthMiddleware()) { auth in
                     auth.post("register", use: register)
