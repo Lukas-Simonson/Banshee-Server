@@ -18,7 +18,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.0.0"),
         // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors.
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
-        // 🔒 JWT Managment for secure authorization.
+        // 🔒 JWT Management for secure authorization.
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
         // XML Decoding and Encoding using the Codable protocol.
         .package(url: "https://github.com/Lukas-Simonson/Banshee-XMLCoder", branch: "main"),
