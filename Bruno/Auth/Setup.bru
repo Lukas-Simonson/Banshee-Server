@@ -14,12 +14,8 @@ body:json {
   {
     "username": "{{username}}",
     "password": "{{password}}",
-    "role": "{{role}}"
+    "role": "admin" // Always should be admin
   }
-}
-
-vars:pre-request {
-  role: admin
 }
 
 settings {
