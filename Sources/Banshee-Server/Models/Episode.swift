@@ -19,6 +19,9 @@ final class Episode: Model, @unchecked Sendable {
 
     @Field(key: "episodeNumber")
     var episodeNumber: Int?
+    
+    @Field(key: "duration")
+    var duration: Int?
 
     @Parent(key: "podcastID")
     var podcast: Podcast
@@ -36,7 +39,8 @@ extension Episode {
         self.pubDate = dto.pubDate
         self.description = dto.description
         self.season = dto.season
-        self.episodeNumber = dto.episode 
+        self.episodeNumber = dto.episode
+        self.duration = dto.duration.timeStringSeconds
     }
 
     static func != (lhs: Episode, rhs: RSS.EpisodeDTO) -> Bool {
@@ -63,6 +67,7 @@ extension Episode.Migration {
                 .field("description", .string, .required)
                 .field("season", .string)
                 .field("episodeNumber", .int64)
+                .field("duration", .int64)
                 .field("podcastID", .uuid, .references("podcast", "id", onDelete: .cascade))
                 .create()
         }

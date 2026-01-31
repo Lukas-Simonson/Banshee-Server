@@ -8,6 +8,7 @@ struct EpisodeDTO: Content {
     var imageURL: URL?
     var season: String?
     var episodeNumber: Int?
+    var duration: Int?
 
     var podcastID: UUID
     
@@ -26,6 +27,7 @@ extension EpisodeDTO {
         self.description = episode.description
         self.season = episode.season
         self.episodeNumber = episode.episodeNumber
+        self.duration = episode.duration
 
         self.podcastID = episode.$podcast.id
 

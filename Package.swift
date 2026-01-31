@@ -25,7 +25,7 @@ let package = Package(
         .package(url: "https://github.com/Lukas-Simonson/Banshee-XMLCoder", branch: "main"),
         // 🌐 Async HTTP client for streaming downloads.
         .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.9.0"),
-        // Queues Driver ontop of Fluent.
+        // Queues Driver on top of Fluent.
         .package(url: "https://github.com/vapor-community/vapor-queues-fluent-driver.git", from: "3.0.0"),
     ],
     targets: [
