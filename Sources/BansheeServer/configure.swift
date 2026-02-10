@@ -1,4 +1,3 @@
-import NIOSSL
 import Fluent
 import FluentSQLiteDriver
 import Vapor
@@ -14,9 +13,6 @@ import Vapor
 /// - `STORAGE_PATH`: ./.AppData/Storage
 /// - `METADATA_PATH`: ./.AppData/Metadata
 public func configure(_ app: Application) async throws {
-    // uncomment to serve files from /Public folder
-    // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-
     // Configures Application
     try await Configure(app: app)
 

@@ -18,7 +18,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "Banshee-Server",
+            name: "BansheeServer",
             dependencies: [
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
@@ -29,9 +29,9 @@ let package = Package(
             swiftSettings: swiftSettings
         ),
         .testTarget(
-            name: "Banshee-ServerTests",
+            name: "BansheeServerTests",
             dependencies: [
-                .target(name: "Banshee-Server"),
+                .target(name: "BansheeServer"),
                 .product(name: "VaporTesting", package: "vapor"),
             ],
             swiftSettings: swiftSettings
