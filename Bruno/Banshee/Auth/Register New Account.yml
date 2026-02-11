@@ -1,0 +1,60 @@
+info:
+  name: Register New Account
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/auth/register"
+  body:
+    type: json
+    data: |-
+      // Example:
+      //
+      // {
+      //   "email": "exampleTwo@getbanshee.app",
+      //   "username": "MelweenaSmite",
+      //   "name": "Melweena Smite",
+      //   "password": "123password",
+      //   "role": "user" // Must Be: "user" or "admin"
+      // }
+  auth:
+    type: bearer
+    token: ""
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  # Register New Account
+
+  Creates a new user.
+
+  ## Authentication
+  - Required
+  - Admin Role
+  - Bearer Token
+
+  ## Request Body
+
+  | Name     | Description                                                          | Type                    | Required |
+  |----------|----------------------------------------------------------------------|-------------------------|----------|
+  | email    | A unique and valid email address to associate with the user account. | String                  | yes      |
+  | username | A unique username consisting of alphanumeric characters              | String                  | yes      |
+  | name     | The name of the user.                                                | String                  | yes      |
+  | password | The plaintext password the user will use when authenticating.        | String                  | yes      |
+  | role     | The role of the created user.                                        | String('user', 'admin') | yes      |
+
+  ## Response
+
+  **Status: 201 Created**
+
+  | name  | description                         | type                    |
+  |-------|-------------------------------------|-------------------------|
+  | id    | The unique identifier for the user. | String(UUID)            |
+  | email | The email of the user.              | String                  |
+  | name  | The name of the user.               | String                  |
+  | role  | The role of the user.               | String('user', 'admin') |

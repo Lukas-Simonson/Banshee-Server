@@ -1,0 +1,47 @@
+info:
+  name: Create Login Token
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/auth/login"
+  body:
+    type: json
+    data: |-
+      // Example:
+      //
+      // {
+      //   "username": "BastillaGravewynd",
+      //   "password": "password123"
+      // }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  # Create Login Token
+
+  Uses basic authentication to create a login token that can be used for authentication on all other requests.
+
+  ## Request Body
+
+  | Name     | Description                            | Type   | Required |
+  |----------|----------------------------------------|--------|----------|
+  | username | The username OR email of the account.  | String | yes      |
+  | password | The plaintext password of the account. | String | yes      |
+
+  ## Response
+
+  **Status: 200 Ok**
+
+  | name  | description                          | type                    |
+  |-------|--------------------------------------|-------------------------|
+  | id    | The unique identifier for the user.  | String(UUID)            |
+  | email | The email of the user.               | String                  |
+  | name  | The name of the user.                | String                  |
+  | role  | The role of the user.                | String('user', 'admin') |
+  | token | The bearer token for authentication. | String                  |

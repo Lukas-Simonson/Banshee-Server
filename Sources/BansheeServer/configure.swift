@@ -1,5 +1,6 @@
 import Fluent
 import FluentSQLiteDriver
+import JWT
 import Vapor
 
 /// Configures the application.
@@ -26,6 +27,10 @@ struct Configure {
     @discardableResult
     init(app: Application) async throws {
         self.app = app
+        
+        app.passwords.use(.bcrypt)
+        try await database()
+        try await jwt()
     }
     
     /// Sets up the database connection using SQLite. Including creating and performing migrations.
@@ -41,12 +46,21 @@ struct Configure {
         }
         
         // Create Database
-        app.databases.use(.sqlite(.file("\(metadata)/banshee.sqlite")), as: .sqlite)
+        if app.environment == .testing {
+            app.databases.use(.sqlite(.memory), as: .sqlite, isDefault: true)
+        } else {
+            app.databases.use(.sqlite(.file("\(metadata)/banshee.sqlite")), as: .sqlite)
+        }
         
         // Setup Migrations
+        app.migrations.add(User.Migration.Create())
         
         // Perform Migrations
         try await app.autoMigrate()
+    }
+    
+    private func jwt() async throws {
+        await app.jwt.keys.add(hmac: HMACKey(stringLiteral: try value(for: "JWT_SECRET")), digestAlgorithm: .sha256)
     }
     
     /// Gets an environment value for a given key, or throws an error.
@@ -59,8 +73,8 @@ struct Configure {
         #if DEBUG
         return switch key {
             case "JWT_SECRET": "super_secure_jwt"
-            case "STORAGE_PATH": "./AppData/Storage"
-            case "METADATA_PATH": "./AppData/Metadata"
+            case "STORAGE_PATH": "./.AppData/Storage"
+            case "METADATA_PATH": "./.AppData/Metadata"
             default: throw ConfigError.missingExpectedValue(key: key)
         }
         #else

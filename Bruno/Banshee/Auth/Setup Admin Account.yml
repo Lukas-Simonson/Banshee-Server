@@ -1,0 +1,52 @@
+info:
+  name: Setup Admin Account
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/auth/setup"
+  body:
+    type: json
+    data: |-
+      // Example:
+      //
+      // {
+      //   "email": "example@getbanshee.app",
+      //   "username": "BastillaGravewynd",
+      //   "name": "Bastilla Gravewynd",
+      //   "password": "password123",
+      //   "role": "admin" // Must Be: "admin"
+      // }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  # Setup Admin Account
+
+  Creates an admin user, only available when no admin users exist.
+
+  ## Request Body
+
+  | Name     | Description                                                          | Type            | Required |
+  |----------|----------------------------------------------------------------------|-----------------|----------|
+  | email    | A unique and valid email address to associate with the user account. | String          | yes      |
+  | username | A unique username consisting of alphanumeric characters              | String          | yes      |
+  | name     | The name of the user.                                                | String          | yes      |
+  | password | The plaintext password the user will use when authenticating.        | String          | yes      |
+  | role     | The role of the created user.                                        | String('admin') | yes      |
+
+  ## Response
+
+  **Status: 201 Created**
+
+  | name  | description                         | type                    |
+  |-------|-------------------------------------|-------------------------|
+  | id    | The unique identifier for the user. | String(UUID)            |
+  | email | The email of the user.              | String                  |
+  | name  | The name of the user.               | String                  |
+  | role  | The role of the user.               | String('user', 'admin') |

@@ -9,6 +9,9 @@ final class User: Model, @unchecked Sendable {
     @Field(key: "email")
     var email: String
     
+    @Field(key: "username")
+    var username: String
+    
     @Field(key: "name")
     var name: String
     
@@ -20,8 +23,9 @@ final class User: Model, @unchecked Sendable {
     
     init() { }
     
-    init(email: String, name: String, passwordHash: String, role: Role) {
+    init(email: String, username: String, name: String, passwordHash: String, role: Role) {
         self.email = email
+        self.username = username
         self.name = name
         self.passwordHash = passwordHash
         self.role = role
@@ -39,25 +43,15 @@ extension User {
     }
 }
 
-extension User: ModelAuthenticatable {
-    typealias AuthKeypath = KeyPath<User, FieldProperty<User, String>>
-    
-    static let usernameKey: AuthKeypath = \User.$name
-    static let passwordHashKey: AuthKeypath = \User.$passwordHash
-    
-    func verify(password: String) throws -> Bool {
-        try Bcrypt.verify(password, created: passwordHash)
-    }
-}
-
 extension User.Migration {
     struct Create: AsyncMigration {
         func prepare(on database: any Database) async throws {
             try await database.schema("user")
                 .id()
                 .field("email", .string, .required).unique(on: "email")
-                .field("name", .string, .required).unique(on: "name")
-                .field("password", .string, .required)
+                .field("username", .string, .required).unique(on: "username")
+                .field("name", .string, .required)
+                .field("passwordHash", .string, .required)
                 .field("role", .string, .required)
                 .create()
         }

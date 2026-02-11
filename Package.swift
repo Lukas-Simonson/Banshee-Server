@@ -15,8 +15,10 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.0.0"),
         // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
-        // 🔐 JSON Web Token Support
+        // 🔐 JSON Web Token support
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
+        // 🤡 Fake data generation for testing.
+        .package(url: "https://github.com/vadymmarkov/Fakery", from: "5.0.0")
     ],
     targets: [
         .executableTarget(
@@ -36,6 +38,7 @@ let package = Package(
             dependencies: [
                 .target(name: "BansheeServer"),
                 .product(name: "VaporTesting", package: "vapor"),
+                .product(name: "Fakery", package: "Fakery"),
             ],
             swiftSettings: swiftSettings
         )
