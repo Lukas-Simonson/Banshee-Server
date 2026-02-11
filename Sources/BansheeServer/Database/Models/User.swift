@@ -2,7 +2,7 @@ import Fluent
 import Foundation
 import Vapor
 
-final class User: Model, @unchecked Sendable {
+final class User: Authenticatable, Model, @unchecked Sendable {
     @ID
     var id: UUID?
     

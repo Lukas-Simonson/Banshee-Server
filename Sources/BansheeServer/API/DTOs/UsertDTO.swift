@@ -3,6 +3,7 @@ import Vapor
 struct UserDTO: Content {
     let id: UUID
     let email: String
+    let username: String
     let name: String
     let role: User.Role
     let token: String?
@@ -13,6 +14,7 @@ extension User {
         try UserDTO(
             id: requireID(),
             email: email,
+            username: username,
             name: name,
             role: role,
             token: token

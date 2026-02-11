@@ -16,7 +16,8 @@ struct AuthController: RouteCollection {
         auth.grouped(AdminAuthenticator())
             .post("register", use: register)
         
-        auth.post("login", use: login)
+        auth.grouped(UserBasicAuthenticator())
+            .get("login", use: login)
     }
     
     /// Creates an admin user, can only be used when no admin users exist.
@@ -76,16 +77,9 @@ struct AuthController: RouteCollection {
     
     /// Provides a JWT for authentication based on a provided username & password.
     ///
-    /// Expects a ``SignInRequest`` for the request body.
-    ///
     /// - Returns: A `200 Ok` status code with a ``UserDTO`` body that includes an Authorization Token.
     private func login(req: Request) async throws -> Response {
-        try SignInRequest.validate(content: req)
-        let signInRequest = try req.content.decode(SignInRequest.self)
-        
-        guard let user = try await req.userDAO.read(withEmailOrUsername: signInRequest.username),
-              try await req.password.async.verify(signInRequest.password, created: user.passwordHash)
-        else { throw AuthError.invalidUsernameOrPassword }
+        let user = try req.auth.require(User.self)
         
         return try await Response(
             status: .ok,
@@ -96,23 +90,6 @@ struct AuthController: RouteCollection {
 }
 
 extension AuthController {
-    
-    /// Request body intended for use of basic authentication.
-    struct SignInRequest: Content, Validatable {
-        
-        /// The username OR email of the user attempting to sign in.
-        let username: String
-        
-        /// The plaintext password of the user attempting to sign in.
-        let password: String
-        
-        /// The validations used for the request.
-        ///
-        /// - `username`: Must be either an email or alphanumeric.
-        static func validations(_ validations: inout Vapor.Validations) {
-            validations.add("username", as: String.self, is: .email || .alphanumeric)
-        }
-    }
     
     /// Request body intended for creating user accounts.
     struct RegisterRequest: Content, Validatable {

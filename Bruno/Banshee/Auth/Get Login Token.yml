@@ -1,20 +1,13 @@
 info:
-  name: Create Login Token
+  name: Get Login Token
   type: http
   seq: 3
 
 http:
-  method: POST
+  method: GET
   url: "{{baseURL}}/api/auth/login"
-  body:
-    type: json
-    data: |-
-      // Example:
-      //
-      // {
-      //   "username": "BastillaGravewynd",
-      //   "password": "password123"
-      // }
+  auth:
+    type: basic
 
 settings:
   encodeUrl: true
@@ -27,12 +20,9 @@ docs: |-
 
   Uses basic authentication to create a login token that can be used for authentication on all other requests.
 
-  ## Request Body
-
-  | Name     | Description                            | Type   | Required |
-  |----------|----------------------------------------|--------|----------|
-  | username | The username OR email of the account.  | String | yes      |
-  | password | The plaintext password of the account. | String | yes      |
+  ## Authentication
+  - Required
+  - Basic Authentication
 
   ## Response
 
