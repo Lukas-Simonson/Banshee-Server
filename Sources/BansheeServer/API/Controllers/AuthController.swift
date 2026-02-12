@@ -2,9 +2,9 @@ import Vapor
 
 /// Sets up the Auth endpoints
 ///
-/// - `/api/auth/setup`: Initial account setup endpoint.
-/// - `/api/auth/register`: Admin Only, allows creating accounts.
-/// - `/api/auth/login`: Returns an auth token based on provided user information.
+/// - `POST /api/auth/setup`: Initial account setup endpoint.
+/// - `POST /api/auth/register`: Admin Only, allows creating accounts.
+/// - `GET  /api/auth/login`: Returns an auth token based on provided user information.
 struct AuthController: RouteCollection {
     
     /// Called to register the routes of the collection.
@@ -13,7 +13,8 @@ struct AuthController: RouteCollection {
         
         auth.post("setup", use: setup)
         
-        auth.grouped(AdminAuthenticator())
+        auth.grouped(UserToken.authenticator())
+            .grouped(UserToken.adminGuardMiddleware())
             .post("register", use: register)
         
         auth.grouped(UserBasicAuthenticator())

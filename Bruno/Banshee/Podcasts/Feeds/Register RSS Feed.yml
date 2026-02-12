@@ -1,0 +1,33 @@
+info:
+  name: Register RSS Feed
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/podcasts/feeds"
+  body:
+    type: json
+    data: |-
+      // Example:
+      // {
+      //   "url": "https://rss.acast.com/dungeons-and-daddies"
+      // }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  # Register RSS Feed
+
+  Registers an RSS feed based on a provided URL. This feed's metadata is then downloaded onto the server.
+
+  ## Request Body
+
+  | name | description              | type        |
+  |------|--------------------------|-------------|
+  | url  | The url of the RSS feed. | String(URL) |

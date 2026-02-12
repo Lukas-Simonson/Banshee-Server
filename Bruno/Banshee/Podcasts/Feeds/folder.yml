@@ -1,0 +1,7 @@
+info:
+  name: Feeds
+  type: folder
+  seq: 1
+
+request:
+  auth: inherit

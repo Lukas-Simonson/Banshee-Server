@@ -15,7 +15,7 @@ final class User: Authenticatable, Model, @unchecked Sendable {
     @Field(key: "name")
     var name: String
     
-    @Field(key: "passwordHash")
+    @Field(key: "password_hash")
     var passwordHash: String
     
     @Field(key: "role")
@@ -51,7 +51,7 @@ extension User.Migration {
                 .field("email", .string, .required).unique(on: "email")
                 .field("username", .string, .required).unique(on: "username")
                 .field("name", .string, .required)
-                .field("passwordHash", .string, .required)
+                .field("password_hash", .string, .required)
                 .field("role", .string, .required)
                 .create()
         }

@@ -1,5 +1,5 @@
 import Fluent
-import Foundation
+import Vapor
 
 final class Podcast: Model, @unchecked Sendable {
     @ID
@@ -9,16 +9,29 @@ final class Podcast: Model, @unchecked Sendable {
     var title: String
     
     @Field(key: "link")
-    var link: URL?
+    var link: URI?
     
     @Field(key: "language")
     var language: String
     
-    @Field(key: "imageURL")
-    var imageURL: URL?
+    @Field(key: "image_url")
+    var imageURL: URI?
     
     @Field(key: "description")
     var description: String
+    
+    @Children(for: \.$podcast)
+    var episodes: [Episode]
+    
+    init() {}
+    
+    init(title: String, link: URI?, language: String, imageURL: URI?, description: String) {
+        self.title = title
+        self.link = link
+        self.language = language
+        self.imageURL = imageURL
+        self.description = description
+    }
 }
 
 extension Podcast {
@@ -35,7 +48,7 @@ extension Podcast.Migration {
                 .field("title", .string, .required)
                 .field("link", .string)
                 .field("language", .string, .required)
-                .field("imageURL", .string)
+                .field("image_url", .string)
                 .field("description", .string, .required)
                 .create()
         }
