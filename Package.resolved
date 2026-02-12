@@ -1,5 +1,5 @@
 {
-  "originHash" : "f43cf6b1c3262476ea27f7d2e36c7b943ee5c060e9890448ae2e79abaa499b9e",
+  "originHash" : "1ad03cbb009f4940bfa8ec7d1103682d4f167ada4d79738f4f1dc90312fc8a7e",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "6f3615ccf2ac3c2ae0c8087d527546e9544a43dd",
         "version" : "1.21.0"
+      }
+    },
+    {
+      "identity" : "banshee-xmlcoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lukas-Simonson/Banshee-XMLCoder",
+      "state" : {
+        "branch" : "main",
+        "revision" : "b392314a5e9067db4e716ffdc5248fdced1d7c95"
       }
     },
     {

@@ -2,6 +2,7 @@ import Fluent
 import FluentSQLiteDriver
 import JWT
 import Vapor
+import XMLCoder
 
 /// Configures the application.
 ///
@@ -31,6 +32,7 @@ struct Configure {
         app.passwords.use(.bcrypt)
         try await database()
         try await jwt()
+        try await xml()
     }
     
     /// Sets up the database connection using SQLite. Including creating and performing migrations.
@@ -55,12 +57,26 @@ struct Configure {
         // Setup Migrations
         app.migrations.add(User.Migration.Create())
         
+        app.migrations.add(Podcast.Migration.Create())
+        
+        app.migrations.add(Episode.Migration.Create())
+        
         // Perform Migrations
         try await app.autoMigrate()
     }
     
+    /// Sets up JWT secret.
     private func jwt() async throws {
         await app.jwt.keys.add(hmac: HMACKey(stringLiteral: try value(for: "JWT_SECRET")), digestAlgorithm: .sha256)
+    }
+    
+    /// Sets up XML Decoding for RSS Feeds.
+    private func xml() async throws {
+        let decoder = XMLDecoder.rss()
+        
+        ContentConfiguration.global.use(decoder: decoder, for: .xml)
+        ContentConfiguration.global.use(decoder: decoder, for: .init(type: "application", subType: "rss+xml"))
+        ContentConfiguration.global.use(decoder: decoder, for: .init(type: "text", subType: "xml"))
     }
     
     /// Gets an environment value for a given key, or throws an error.

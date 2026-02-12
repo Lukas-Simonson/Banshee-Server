@@ -18,7 +18,9 @@ let package = Package(
         // 🔐 JSON Web Token support
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
         // 🤡 Fake data generation for testing.
-        .package(url: "https://github.com/vadymmarkov/Fakery", from: "5.0.0")
+        .package(url: "https://github.com/vadymmarkov/Fakery", from: "5.0.0"),
+        // 📄 XML Encoding & Decoding using Codable.
+        .package(url: "https://github.com/Lukas-Simonson/Banshee-XMLCoder", branch: "main"),
     ],
     targets: [
         .executableTarget(
@@ -30,6 +32,7 @@ let package = Package(
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "JWT", package: "jwt"),
+                .product(name: "XMLCoder", package: "Banshee-XMLCoder"),
             ],
             swiftSettings: swiftSettings
         ),
