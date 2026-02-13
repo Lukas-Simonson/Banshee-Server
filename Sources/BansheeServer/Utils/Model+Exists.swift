@@ -6,4 +6,10 @@ extension Model {
             .filter(\._$id == id)
             .count() == 1
     }
+    
+    static func require<E: Error>(oneWith id: IDValue, existsOn db: any Database, or error: E) async throws {
+        if try await !exists(with: id, on: db) {
+            throw error
+        }
+    }
 }

@@ -31,7 +31,7 @@ struct FeedsController: RouteCollection {
   
         return try await req.podcastDAO
             .create(podcast, from: feed, with: episodes)
-            .toDTO()
+            .toDTO(configMode: .none)
             .encodeResponse(status: .created, for: req)
     }
 }

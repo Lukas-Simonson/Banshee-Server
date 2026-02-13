@@ -18,4 +18,18 @@ extension String {
         
         return totalSeconds
     }
+    
+    var trimmed: String {
+        trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    var nilIfEmpty: String? {
+        isEmpty ? nil : self
+    }
+}
+
+extension Optional<String> {
+    var emptyIfNil: String {
+        self ?? ""
+    }
 }

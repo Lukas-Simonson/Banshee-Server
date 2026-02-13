@@ -20,6 +20,9 @@ final class Podcast: Model, @unchecked Sendable {
     @Field(key: "description")
     var description: String
     
+    @Group(key: "config")
+    var config: PodcastConfig
+    
     @Children(for: \.$podcast)
     var episodes: [Episode]
     
@@ -28,12 +31,13 @@ final class Podcast: Model, @unchecked Sendable {
     
     init() {}
     
-    init(title: String, link: URI?, language: String, imageURL: URI?, description: String) {
+    init(title: String, link: URI?, language: String, imageURL: URI?, description: String, config: PodcastConfig? = nil) {
         self.title = title
         self.link = link
         self.language = language
         self.imageURL = imageURL
         self.description = description
+        self.config = config ?? PodcastConfig(title: nil, imageURL: nil, description: nil)
     }
 }
 
@@ -53,6 +57,9 @@ extension Podcast.Migration {
                 .field("language", .string, .required)
                 .field("image_url", .string)
                 .field("description", .string, .required)
+                .field("config_title", .string)
+                .field("config_image_url", .string)
+                .field("config_description", .string)
                 .create()
         }
 

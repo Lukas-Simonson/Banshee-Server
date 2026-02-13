@@ -6,6 +6,15 @@ info:
 http:
   method: GET
   url: "{{baseURL}}/api/podcasts"
+  params:
+    - name: config
+      value: override
+      type: query
+      disabled: true
+    - name: includeRSS
+      value: "false"
+      type: query
+      disabled: true
   auth: inherit
 
 settings:
@@ -18,3 +27,10 @@ docs: |-
   # Get All Podcasts
 
   Returns metadata for all podcasts tracked by the server.
+
+  ## Query Parameters
+
+  | name       | description                                                          | type                                  | default    |
+  |------------|----------------------------------------------------------------------|---------------------------------------|------------|
+  | config     | Controls how the podcast configs are utilized                        | String('none', 'include', 'override') | 'override' |
+  | includeRSS | Controls if the podcast RSS Feeds should be included in the response | Bool('true', 'false')                 | 'false'    |

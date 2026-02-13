@@ -25,15 +25,21 @@ struct PodcastDAO {
         return podcast
     }
     
-    func read() async throws -> [Podcast] {
+    func read(includingRSS: Bool = false) async throws -> [Podcast] {
         try await Podcast.query(on: db)
+            .when(includingRSS) { $0.with(\.$feed) }
             .all()
     }
     
-    func read(with id: UUID) async throws -> Podcast? {
+    func read(with id: UUID, includingRSS: Bool = false) async throws -> Podcast? {
         try await Podcast.query(on: db)
             .filter(\.$id == id)
+            .when(includingRSS) { $0.with(\.$feed) }
             .first()
+    }
+    
+    func update(_ podcast: Podcast) async throws {
+        try await podcast.update(on: db)
     }
     
     func delete(with id: UUID) async throws {

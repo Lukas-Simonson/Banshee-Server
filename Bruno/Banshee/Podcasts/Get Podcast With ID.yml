@@ -7,9 +7,14 @@ http:
   method: GET
   url: "{{baseURL}}/api/podcasts/:podcastID"
   params:
-    - name: ""
-      value: ""
+    - name: config
+      value: override
       type: query
+      disabled: true
+    - name: includeRSS
+      value: "false"
+      type: query
+      disabled: true
     - name: podcastID
       value: ""
       type: path
@@ -25,3 +30,10 @@ docs: |-
   # Get Podcast With ID
 
   Returns metadata for the podcast with the provided podcast id.
+
+  ## Query Parameters
+
+  | name       | description                                                          | type                                  | default    |
+  |------------|----------------------------------------------------------------------|---------------------------------------|------------|
+  | config     | Controls how the podcasts config is utilized                         | String('none', 'include', 'override') | 'override' |
+  | includeRSS | Controls if the podcasts RSS Feed should be included in the response | Bool('true', 'false')                 | 'false'    |

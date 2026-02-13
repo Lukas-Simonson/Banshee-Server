@@ -13,9 +13,11 @@ struct PodcastsController: RouteCollection {
             
             try podcasts.register(collection: FeedsController())
             
-            podcasts.group(":podcastID") { podcastID in
+            try podcasts.group(":podcastID") { podcastID in
                 podcastID.get(use: getPodcast)
                 podcastID.get("episodes", use: getEpisodes)
+                
+                try podcastID.register(collection: PodcastConfigController())
                 
                 podcastID.group(UserToken.adminGuardMiddleware()) { adminPodcastID in
                     adminPodcastID.delete(use: deletePodcast)
@@ -26,23 +28,43 @@ struct PodcastsController: RouteCollection {
     
     /// Returns metadata for all podcasts tracked by the server.
     ///
+    /// - Query Parameters:
+    ///   - `config`: Controls how the podcast configs are utilized.
+    ///     - Valid: `none`, `include`, `override`
+    ///     - Default: `override`
+    ///   - `includeRSS`: `Bool` value controlling if RSS Feeds should be included in the response.
+    ///     - Default: `false`
+    ///
     /// - Returns: `200 Ok` status with an Array of ``PodcastDTO`` in the body.
     private func getAllPodcasts(req: Request) async throws -> [PodcastDTO] {
-        try await req.podcastDAO
-            .read()
-            .map { try $0.toDTO() }
+        try GetAllPodcastsQuery.validate(query: req)
+        let query = try req.query.decode(GetAllPodcastsQuery.self)
+        
+        return try await req.podcastDAO
+            .read(includingRSS: query.includeRSS ?? false)
+            .map { try $0.toDTO(configMode: query.config ?? .override) }
     }
     
     /// Returns metadata for the podcast with the provided podcast id.
+    ///
+    /// - Query Parameters:
+    ///   - `config`: Controls how the podcasts config is utilized.
+    ///     - Valid: `none`, `include`, `override`
+    ///     - Default: `override`
+    ///   - `includeRSS`: `Bool` value controlling if the RSS Feed should be included in the response.
+    ///     - Default: `false`
     ///
     /// - Returns: `200 Ok` status with a ``PodcastDTO`` in the body.
     private func getPodcast(req: Request) async throws -> PodcastDTO {
         let id = try req.parameters.require("podcastID", as: UUID.self)
         
+        try GetAllPodcastsQuery.validate(query: req)
+        let query = try req.query.decode(GetAllPodcastsQuery.self)
+        
         return try await req.podcastDAO
-            .read(with: id)
+            .read(with: id, includingRSS: query.includeRSS ?? false)
             .unwrap(or: DBError.noItemFound("Podcast", with: id))
-            .toDTO()
+            .toDTO(configMode: query.config ?? .override)
     }
     
     /// Returns episode metadata for episodes in the podcast with the provided id.
@@ -51,8 +73,7 @@ struct PodcastsController: RouteCollection {
     private func getEpisodes(req: Request) async throws -> [EpisodeDTO] {
         let id = try req.parameters.require("podcastID", as: UUID.self)
         
-        guard try await Podcast.exists(with: id, on: req.db)
-        else { throw DBError.noItemFound("Podcast", with: id) }
+        try await Podcast.require(oneWith: id, existsOn: req.db, or: DBError.noItemFound("Podcast", with: id))
         
         return try await req.episodeDAO
             .read(fromPodcastWithID: id)
@@ -68,5 +89,28 @@ struct PodcastsController: RouteCollection {
         try await req.podcastDAO.delete(with: id)
         
         return Response(status: .noContent)
+    }
+}
+
+extension PodcastsController {
+    
+    struct GetAllPodcastsQuery: Content, Validatable {
+        let config: ConfigMode?
+        let includeRSS: Bool?
+        
+        static func validations(_ validations: inout Validations) {
+            validations.add("config", as: String.self, is: .in(["none", "include", "override"]), required: false)
+            validations.add("includeRSS", as: Bool.self, required: false)
+        }
+    }
+    
+    struct GetPodcastQuery: Content, Validatable {
+        let config: ConfigMode?
+        let includeRSS: Bool?
+        
+        static func validations(_ validations: inout Validations) {
+            validations.add("config", as: String.self, is: .in(["none", "include", "override"]), required: false)
+            validations.add("includeRSS", as: Bool.self, required: false)
+        }
     }
 }
