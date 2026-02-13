@@ -58,6 +58,7 @@ struct Configure {
         app.migrations.add(User.Migration.Create())
         
         app.migrations.add(Podcast.Migration.Create())
+        app.migrations.add(RSSFeed.Migration.Create())
         
         app.migrations.add(Episode.Migration.Create())
         

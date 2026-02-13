@@ -2,18 +2,14 @@ import Fluent
 import Vapor
 
 extension Request {
-    var userDAO: User.DAO {
-        User.DAO(db: self.db)
+    var userDAO: UserDAO {
+        UserDAO(db: self.db)
     }
 }
 
-extension User {
-    struct DAO {
-        let db: any Database
-    }
-}
-
-extension User.DAO {
+struct UserDAO {
+    let db: any Database
+    
     func adminCount() async throws -> Int {
         try await User.query(on: db)
             .filter(\.$role == .admin)

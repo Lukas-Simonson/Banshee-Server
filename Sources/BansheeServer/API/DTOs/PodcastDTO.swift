@@ -8,8 +8,8 @@ struct PodcastDTO: Content {
     let imageURL: URI?
     let description: String
     
+    let feed: RSSFeedDTO?
     // let config: PodcastConfigDTO?
-    // let feed: RSSFeedDTO?
     // let episodes: [EpisodeDTO]?
 }
 
@@ -21,7 +21,8 @@ extension Podcast {
             link: link,
             language: language,
             imageURL: imageURL,
-            description: description
+            description: description,
+            feed: $feed.value??.toDTO()
         )
     }
 }

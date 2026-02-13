@@ -37,19 +37,16 @@ struct AuthController: RouteCollection {
         guard try await req.userDAO.adminCount() == 0
         else { throw Abort(.badRequest, reason: "An admin account already exists, please use the /api/auth/register endpoint to create a new user.") }
         
-        let user = try await req.userDAO.create(
-            email: registerRequest.email,
-            username: registerRequest.username,
-            name: registerRequest.name,
-            passwordHash: req.password.async.hash(registerRequest.password),
-            role: registerRequest.role
-        )
-        
-        return try Response(
-            status: .created,
-            content: user.toDTO(),
-            encoder: req.contentEncoder
-        )
+        return try await req.userDAO
+            .create(
+                email: registerRequest.email,
+                username: registerRequest.username,
+                name: registerRequest.name,
+                passwordHash: req.password.async.hash(registerRequest.password),
+                role: registerRequest.role
+            )
+            .toDTO()
+            .encodeResponse(status: .created, for: req)
     }
     
     /// Registers a user, and can only be called by admin users.
@@ -61,32 +58,24 @@ struct AuthController: RouteCollection {
         try RegisterRequest.validate(content: req)
         let registerRequest = try req.content.decode(RegisterRequest.self)
         
-        let user = try await req.userDAO.create(
-            email: registerRequest.email,
-            username: registerRequest.username,
-            name: registerRequest.name,
-            passwordHash: req.password.async.hash(registerRequest.password),
-            role: registerRequest.role
-        )
-        
-        return try Response(
-            status: .created,
-            content: user.toDTO(),
-            encoder: req.contentEncoder
-        )
+        return try await req.userDAO
+            .create(
+                email: registerRequest.email,
+                username: registerRequest.username,
+                name: registerRequest.name,
+                passwordHash: req.password.async.hash(registerRequest.password),
+                role: registerRequest.role
+            )
+            .toDTO()
+            .encodeResponse(status: .created, for: req)
     }
     
     /// Provides a JWT for authentication based on a provided username & password.
     ///
     /// - Returns: A `200 Ok` status code with a ``UserDTO`` body that includes an Authorization Token.
-    private func login(req: Request) async throws -> Response {
+    private func login(req: Request) async throws -> UserDTO {
         let user = try req.auth.require(User.self)
-        
-        return try await Response(
-            status: .ok,
-            content: user.toDTO(with: req.jwt.sign(UserToken(for: user))),
-            encoder: req.contentEncoder
-        )
+        return try await user.toDTO(with: req.jwt.sign(user.token()))
     }
 }
 

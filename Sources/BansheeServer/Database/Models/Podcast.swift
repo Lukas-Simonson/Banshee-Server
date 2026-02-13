@@ -23,6 +23,9 @@ final class Podcast: Model, @unchecked Sendable {
     @Children(for: \.$podcast)
     var episodes: [Episode]
     
+    @OptionalChild(for: \.$podcast)
+    var feed: RSSFeed?
+    
     init() {}
     
     init(title: String, link: URI?, language: String, imageURL: URI?, description: String) {

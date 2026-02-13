@@ -14,11 +14,11 @@ struct AuthSetupTests {
                 .POST, "api/auth/setup",
                 beforeRequest: { req in
                     try req.content.encode(Mock.registration(with: .admin))
-                    #expect(try await User.DAO(db: app.db).adminCount() == 0, "Invalid setup for test")
+                    #expect(try await UserDAO(db: app.db).adminCount() == 0, "Invalid setup for test")
                 },
                 afterResponse: { response async throws in
                     #expect(response.status == .created)
-                    #expect(try await User.DAO(db: app.db).adminCount() == 1)
+                    #expect(try await UserDAO(db: app.db).adminCount() == 1)
                 }
             )
         }
@@ -31,11 +31,11 @@ struct AuthSetupTests {
                 .POST, "api/auth/setup",
                 beforeRequest: { req in
                     try req.content.encode(Mock.registration(with: .user))
-                    #expect(try await User.DAO(db: app.db).adminCount() == 0, "Invalid setup for test")
+                    #expect(try await UserDAO(db: app.db).adminCount() == 0, "Invalid setup for test")
                 },
                 afterResponse: { response async throws in
                     #expect(response.status == .badRequest)
-                    #expect(try await User.DAO(db: app.db).adminCount() == 0, "Admin user was created")
+                    #expect(try await UserDAO(db: app.db).adminCount() == 0, "Admin user was created")
                 }
             )
         }
@@ -46,7 +46,7 @@ struct AuthSetupTests {
         try await Application.test { app in
             
             try await Mock.user(with: .admin).create(on: app.db)
-            #expect(try await User.DAO(db: app.db).adminCount() == 1, "Test requires 1 admin user to be created")
+            #expect(try await UserDAO(db: app.db).adminCount() == 1, "Test requires 1 admin user to be created")
             
             try await app.testing().test(
                 .POST, "api/auth/setup",
@@ -55,7 +55,7 @@ struct AuthSetupTests {
                 },
                 afterResponse: { response async throws in
                     #expect(response.status == .badRequest)
-                    #expect(try await User.DAO(db: app.db).adminCount() == 1, "Admin user was created")
+                    #expect(try await UserDAO(db: app.db).adminCount() == 1, "Admin user was created")
                 }
             )
         }

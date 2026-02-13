@@ -22,3 +22,9 @@ struct UserToken: JWTPayload, Authenticatable {
         try self.expiration.verifyNotExpired()
     }
 }
+
+extension User {
+    func token() throws -> UserToken {
+        try UserToken(for: self)
+    }
+}
