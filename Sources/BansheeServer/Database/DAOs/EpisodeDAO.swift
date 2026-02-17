@@ -15,4 +15,10 @@ struct EpisodeDAO {
             .filter(\.$podcast.$id == id)
             .all()
     }
+    
+    func read(with id: UUID) async throws -> Episode? {
+        try await Episode.query(on: db)
+            .filter(\.$id == id)
+            .first()
+    }
 }
