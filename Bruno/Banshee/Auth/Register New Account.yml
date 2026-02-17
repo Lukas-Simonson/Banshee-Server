@@ -57,4 +57,4 @@ docs: |-
   | id    | The unique identifier for the user. | String(UUID)            |
   | email | The email of the user.              | String                  |
   | name  | The name of the user.               | String                  |
-  | role  | The role of the user.               | String('user', 'admin') |
+  | role  | The role of the user.               | String(`user`, `admin`) |

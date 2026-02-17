@@ -1,0 +1,40 @@
+info:
+  name: Set Episode Progress
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{baseURL}}/api/episodes/:episodeID/progress"
+  params:
+    - name: episodeID
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      // Example
+      //
+      // {
+      //   "isCompleted": false,
+      //   "watchTime": 1000
+      // }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  # Set Episode Progress
+
+  Creates or Updates the current progress of the episode with the provided id for the currently authenticated user.
+
+  ## Request Body
+
+  | Name        | Description                                          | Type    | Required |
+  |-------------|------------------------------------------------------|---------|----------|
+  | isCompleted | If the episode is considered finished                | Bool    | yes      |
+  | watchTime   | How many seconds of the episode have be listened to. | Integer | yes      |

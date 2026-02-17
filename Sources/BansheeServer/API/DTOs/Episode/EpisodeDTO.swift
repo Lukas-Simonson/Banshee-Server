@@ -12,6 +12,7 @@ struct EpisodeDTO: Content {
     
     let duration: Int?
     let audio: AudioDTO?
+    let progress: EpisodeProgressDTO?
     var config: EpisodeConfigDTO?
     
     let podcastID: UUID
@@ -28,6 +29,7 @@ extension Episode {
             episode: episodeNumber,
             duration: duration,
             audio: !includeAudio ? nil : audio.toDTO(),
+            progress: try? joined(EpisodeProgress.self).toDTO(),
             config: config.toDTO(),
             podcastID: $podcast.id
         )

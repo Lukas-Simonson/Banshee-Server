@@ -31,6 +31,9 @@ final class Episode: Model, @unchecked Sendable {
     
     @Group(key: "config")
     var config: EpisodeConfig
+    
+    @Children(for: \.$episode)
+    var progresses: [EpisodeProgress]
 
     @Parent(key: "podcast_id")
     var podcast: Podcast

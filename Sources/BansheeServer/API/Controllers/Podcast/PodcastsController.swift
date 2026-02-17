@@ -75,6 +75,8 @@ struct PodcastsController: RouteCollection {
     ///     - Default: `override`
     ///   - `includeAudio`: `Bool` Controls if audio information is included for the episodes.
     ///     - Default: `false`
+    ///   - `includeProgress`: Controls if the authenticated users progress is included with the response.
+    ///     - Default: `false`
     ///
     /// - Returns: `200 Ok` status with an Array of ``EpisodeDTO`` in the body.
     private func getEpisodes(req: Request) async throws -> [EpisodeDTO] {
@@ -83,10 +85,17 @@ struct PodcastsController: RouteCollection {
         try GetEpisodesQuery.validate(query: req)
         let query = try req.query.decode(GetEpisodesQuery.self)
         
+        guard let auth = req.auth.get(UserToken.self),
+              let userID = auth.userID
+        else { throw AuthError.invalidAuth }
+        
         try await Podcast.require(oneWith: id, existsOn: req.db, or: DBError.noItemFound("Podcast", with: id))
         
         return try await req.episodeDAO
-            .read(fromPodcastWithID: id)
+            .read(
+                fromPodcastWithID: id,
+                includeProgressForUserWithID: query.includeProgress != true ? nil : userID
+            )
             .map {
                 try $0.toDTO(
                     configMode: query.config ?? .override,
@@ -132,10 +141,12 @@ extension PodcastsController {
     struct GetEpisodesQuery: Content, Validatable {
         let config: ConfigMode?
         let includeAudio: Bool?
+        let includeProgress: Bool?
         
         static func validations(_ validations: inout Validations) {
             validations.add("config", as: String.self, is: .in(["none", "include", "override"]), required: false)
             validations.add("includeAudio", as: Bool.self, required: false)
+            validations.add("includeProgress", as: Bool.self, required: false)
         }
     }
 }

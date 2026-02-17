@@ -35,5 +35,5 @@ docs: |-
 
   | name       | description                                                          | type                                  | default    |
   |------------|----------------------------------------------------------------------|---------------------------------------|------------|
-  | config     | Controls how the podcasts config is utilized                         | String('none', 'include', 'override') | 'override' |
-  | includeRSS | Controls if the podcasts RSS Feed should be included in the response | Bool('true', 'false')                 | 'false'    |
+  | config     | Controls how the podcasts config is utilized                         | String(`none`, `include`, `override`) | `override` |
+  | includeRSS | Controls if the podcasts RSS Feed should be included in the response | Bool(`true`, `false`)                 | `false`    |

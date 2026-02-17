@@ -1,0 +1,24 @@
+info:
+  name: Delete Episode Progress
+  type: http
+  seq: 3
+
+http:
+  method: DELETE
+  url: "{{baseURL}}/api/episodes/:episodeID/progress"
+  params:
+    - name: episodeID
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  # Delete Episode Progress
+
+  Deletes the current progress of the episode with the provided id for the currently authenticated user.

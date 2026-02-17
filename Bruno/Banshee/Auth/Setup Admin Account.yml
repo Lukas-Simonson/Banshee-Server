@@ -38,7 +38,7 @@ docs: |-
   | username | A unique username consisting of alphanumeric characters              | String          | yes      |
   | name     | The name of the user.                                                | String          | yes      |
   | password | The plaintext password the user will use when authenticating.        | String          | yes      |
-  | role     | The role of the created user.                                        | String('admin') | yes      |
+  | role     | The role of the created user.                                        | String(`admin`) | yes      |
 
   ## Response
 
@@ -49,4 +49,4 @@ docs: |-
   | id    | The unique identifier for the user. | String(UUID)            |
   | email | The email of the user.              | String                  |
   | name  | The name of the user.               | String                  |
-  | role  | The role of the user.               | String('user', 'admin') |
+  | role  | The role of the user.               | String(`user`, `admin`) |

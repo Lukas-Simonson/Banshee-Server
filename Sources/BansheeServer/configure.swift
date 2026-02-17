@@ -61,6 +61,7 @@ struct Configure {
         app.migrations.add(RSSFeed.Migration.Create())
         
         app.migrations.add(Episode.Migration.Create())
+        app.migrations.add(EpisodeProgress.Migration.Create())
         
         // Perform Migrations
         try await app.autoMigrate()

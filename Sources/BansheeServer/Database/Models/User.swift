@@ -21,6 +21,9 @@ final class User: Authenticatable, Model, @unchecked Sendable {
     @Field(key: "role")
     var role: Role
     
+    @Children(for: \.$user)
+    var episodeProgresses: [EpisodeProgress]
+    
     init() { }
     
     init(email: String, username: String, name: String, passwordHash: String, role: Role) {

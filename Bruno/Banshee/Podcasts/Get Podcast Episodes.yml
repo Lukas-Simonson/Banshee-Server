@@ -25,7 +25,8 @@ docs: |-
 
   ## Query Parameters
 
-  | name         | description                                                          | type                                  | default    |
-  |--------------|----------------------------------------------------------------------|---------------------------------------|------------|
-  | config       | Controls how the episode confis are utilized.                        | String('none', 'include', 'override') | 'override' |
-  | includeAudio | Controls if audio information is included for the episodes.          | Bool(`true`, `false`)                 | `false`    |
+  | name            | description                                                                | type                                  | default    |
+  |-----------------|----------------------------------------------------------------------------|---------------------------------------|------------|
+  | config          | Controls how the episode confis are utilized.                              | String(`none`, `include`, `override`) | `override` |
+  | includeAudio    | Controls if audio information is included for the episodes.                | Bool(`true`, `false`)                 | `false`    |
+  | includeProgress | Controls if the authenticated users progress is included for the episodes. | Bool(`true`, `false`)                 | `false`.   |

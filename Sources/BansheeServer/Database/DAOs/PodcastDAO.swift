@@ -39,7 +39,7 @@ struct PodcastDAO {
     }
     
     func update(_ podcast: Podcast) async throws {
-        try await podcast.update(on: db)
+        try await podcast.save(on: db)
     }
     
     func delete(with id: UUID) async throws {
