@@ -69,15 +69,30 @@ struct PodcastsController: RouteCollection {
     
     /// Returns episode metadata for episodes in the podcast with the provided id.
     ///
+    /// - Query Parameters:
+    ///   - `config`: Controls how the episode configs are utilized.
+    ///     - Valid: `none`, `include`, `override`
+    ///     - Default: `override`
+    ///   - `includeAudio`: `Bool` Controls if audio information is included for the episodes.
+    ///     - Default: `false`
+    ///
     /// - Returns: `200 Ok` status with an Array of ``EpisodeDTO`` in the body.
     private func getEpisodes(req: Request) async throws -> [EpisodeDTO] {
         let id = try req.parameters.require("podcastID", as: UUID.self)
+        
+        try GetEpisodesQuery.validate(query: req)
+        let query = try req.query.decode(GetEpisodesQuery.self)
         
         try await Podcast.require(oneWith: id, existsOn: req.db, or: DBError.noItemFound("Podcast", with: id))
         
         return try await req.episodeDAO
             .read(fromPodcastWithID: id)
-            .map { try $0.toDTO() }
+            .map {
+                try $0.toDTO(
+                    configMode: query.config ?? .override,
+                    includeAudio: query.includeAudio ?? false
+                )
+            }
     }
     
     /// Deletes a podcast and its pertaining metadata from the server.
@@ -111,6 +126,16 @@ extension PodcastsController {
         static func validations(_ validations: inout Validations) {
             validations.add("config", as: String.self, is: .in(["none", "include", "override"]), required: false)
             validations.add("includeRSS", as: Bool.self, required: false)
+        }
+    }
+    
+    struct GetEpisodesQuery: Content, Validatable {
+        let config: ConfigMode?
+        let includeAudio: Bool?
+        
+        static func validations(_ validations: inout Validations) {
+            validations.add("config", as: String.self, is: .in(["none", "include", "override"]), required: false)
+            validations.add("includeAudio", as: Bool.self, required: false)
         }
     }
 }

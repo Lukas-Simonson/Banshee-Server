@@ -21,4 +21,8 @@ struct EpisodeDAO {
             .filter(\.$id == id)
             .first()
     }
+    
+    func update(_ episode: Episode) async throws {
+        try await episode.update(on: db)
+    }
 }

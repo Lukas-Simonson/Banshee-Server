@@ -22,3 +22,10 @@ docs: |-
   # Get Podcast Episodes
 
   Returns episode metadata for episodes in the podcast with the provided id.
+
+  ## Query Parameters
+
+  | name         | description                                                          | type                                  | default    |
+  |--------------|----------------------------------------------------------------------|---------------------------------------|------------|
+  | config       | Controls how the episode confis are utilized.                        | String('none', 'include', 'override') | 'override' |
+  | includeAudio | Controls if audio information is included for the episodes.          | Bool(`true`, `false`)                 | `false`    |

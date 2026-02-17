@@ -22,7 +22,7 @@ struct PodcastConfigController: RouteCollection {
         podcast.config = config.toModel()
         try await req.podcastDAO.update(podcast)
         
-        return try await  podcast
+        return try await podcast
             .toDTO(configMode: .override)
             .encodeResponse(status: .accepted, for: req)
     }

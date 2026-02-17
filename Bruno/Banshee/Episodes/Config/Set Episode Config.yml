@@ -1,0 +1,51 @@
+info:
+  name: Set Episode Config
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: "{{baseURL}}/api/episodes/:episodeID/config"
+  params:
+    - name: episodeID
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      // Example:
+      //
+      // {
+      //   "title": "A Man and His Handshake",
+      //   "description": "The start of an adventure",
+      //   "imageURL": "https://example.com/image.png",
+      //   "season": "1",
+      //   "episode": 1
+      // }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  # Set Episode Config
+
+  Updates the episodes config with the one provided through the body of the request.
+
+  ## Authentication
+  - Required
+  - Admin Role
+  - Bearer Token
+
+  ## Request Body
+
+  | Name        | Description                                | Type        | Required |
+  |-------------|--------------------------------------------|-------------|----------|
+  | title       | The title of the episode.                  | String      | no       |
+  | description | The description of the episode.            | String      | no       |
+  | imageURL    | The url for an image used for the episode. | String(URL) | no       |
+  | season      | The season of the episode.                 | String      | no       |
+  | episode     | The episode number of the episode.         | Integer     | no       |

@@ -28,6 +28,9 @@ final class Episode: Model, @unchecked Sendable {
     
     @Group(key: "audio")
     var audio: Audio
+    
+    @Group(key: "config")
+    var config: EpisodeConfig
 
     @Parent(key: "podcast_id")
     var podcast: Podcast
@@ -74,11 +77,20 @@ extension Episode.Migration {
                 .field("season", .string)
                 .field("episode_number", .int64)
                 .field("duration", .int64)
+                .field("podcast_id", .uuid, .references("podcast", "id", onDelete: .cascade), .required)
+            
+                // Audio Group
                 .field("audio_remote_url", .string)
                 .field("audio_local_url", .string)
                 .field("audio_length", .int64)
                 .field("audio_type", .string)
-                .field("podcast_id", .uuid, .references("podcast", "id", onDelete: .cascade), .required)
+            
+                // Config Group
+                .field("config_title", .string)
+                .field("config_description", .string)
+                .field("config_image_url", .string)
+                .field("config_season", .string)
+                .field("config_episode_number", .int64)
                 .create()
         }
 
