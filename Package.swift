@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Banshee-Server",
+    name: "BansheeServer",
     platforms: [
        .macOS(.v13)
     ],

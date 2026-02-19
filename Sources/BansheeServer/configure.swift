@@ -14,6 +14,9 @@ import XMLCoder
 /// When working in a debug environment, the following environment variables are recommended. These are also the default when running in `DEBUG`.
 /// - `STORAGE_PATH`: ./.AppData/Storage
 /// - `METADATA_PATH`: ./.AppData/Metadata
+///
+/// Extra Environment Variables
+/// - `SERVER_NAME`: The name of the server. Defaults to `Banshee`
 public func configure(_ app: Application) async throws {
     // Configures Application
     try await Configure(app: app)
