@@ -10,6 +10,11 @@ struct PodcastConfigController: RouteCollection {
         }
     }
     
+    /// Sets the server's ``EpisodeConfig`` to the one provided in the request body.
+    ///
+    /// - Body: ``PodcastConfigDTO``
+    ///
+    /// - Returns: `202 Accepted` status with the ``PodcastDTO`` overridden with its config in the body.
     private func updateConfig(req: Request) async throws -> Response {
         let id = try req.parameters.require("podcastID", as: UUID.self)
         

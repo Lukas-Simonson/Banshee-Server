@@ -1,19 +1,27 @@
 import Fluent
 import Vapor
 
+/// An RSS Feed.
 final class RSSFeed: Model, @unchecked Sendable {
+    
+    /// The unique identifier used by the server.
     @ID
     var id: UUID?
     
+    /// The url where the RSS feed can be read from.
     @Field(key: "url")
     var url: URI
     
+    /// The date of the last time the server updated using the feed.
     @Field(key: "last_fetched")
     var lastFetched: Date
     
+    /// How long to wait between updates of the rss feed.
+    /// Defaults to 1 day.
     @Field(key: "update_interval")
     var updateInterval: TimeInterval?
     
+    /// The podcast this rss feed is used to fetch.
     @Parent(key: "podcast_id")
     var podcast: Podcast
     
@@ -33,6 +41,8 @@ extension RSSFeed {
 }
 
 extension RSSFeed.Migration {
+    
+    /// Creates the RSSFeed table.
     struct Create: AsyncMigration {
         func prepare(on database: any Database) async throws {
             try await database.schema("rss_feed")

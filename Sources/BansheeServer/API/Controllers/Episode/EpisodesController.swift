@@ -15,14 +15,7 @@ struct EpisodesController: RouteCollection {
     
     /// Returns metadata for the episode with the provided episode id.
     ///
-    /// - Query Parameters:
-    ///   - `config`: Controls how the episode's config is utilized.
-    ///     - Valid: `none`, `include`, `override`
-    ///     - Default: `override`
-    ///   - `includeAudio`: `Bool` Controls if audio information is included with the response.
-    ///     - Default: `false`
-    ///   - `includeProgress`: Controls if the authenticated users progress is included with the response.
-    ///     - Default: `false`
+    /// - Query Parameters: ``GetEpisodeQuery``
     ///
     /// - Returns: `200 Ok` status with a ``EpisodeDTO`` in the body.
     private func getEpisode(_ req: Request) async throws -> EpisodeDTO {
@@ -50,9 +43,20 @@ struct EpisodesController: RouteCollection {
 
 extension EpisodesController {
     
+    /// The query parameters for the get episode with id endpoint.
     struct GetEpisodeQuery: Content, Validatable {
+        
+        /// Controls how the episode's config is utilized.
+        /// - Valid: `none`, `include`, `override`
+        /// - Default: `override`
         let config: ConfigMode?
+        
+        /// Controls if audio information is included with the response.
+        /// - Default: `false`
         let includeAudio: Bool?
+        
+        /// Controls if the authenticated users progress is included with the response.
+        /// - Default: `false`
         let includeProgress: Bool?
         
         static func validations(_ validations: inout Validations) {

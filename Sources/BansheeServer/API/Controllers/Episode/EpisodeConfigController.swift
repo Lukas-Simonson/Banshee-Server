@@ -10,6 +10,11 @@ struct EpisodeConfigController: RouteCollection {
         }
     }
     
+    /// Sets the server's ``EpisodeConfig`` to the one provided in the request body.
+    ///
+    /// - Body: ``EpisodeConfigDTO``
+    ///
+    /// - Returns: `202 Accepted` status with the ``EpisodeDTO`` overridden with its config in the body.
     private func updateConfig(req: Request) async throws -> Response {
         let id = try req.parameters.require("episodeID", as: UUID.self)
         

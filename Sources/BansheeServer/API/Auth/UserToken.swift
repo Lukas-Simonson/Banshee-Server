@@ -1,15 +1,18 @@
 import JWT
 import Vapor
 
+/// A representation of a decoded JWT for a ``User``.
 struct UserToken: JWTPayload, Authenticatable {
     var subject: SubjectClaim
     var expiration: ExpirationClaim
     var role: User.Role
     
+    /// The id of the user this token is used to authenticate for.
     var userID: UUID? {
         UUID(uuidString: subject.value)
     }
     
+    /// Creates a token using a provided ``User``.
     init(for user: User) throws {
         self.subject = try SubjectClaim(value: user.requireID().uuidString)
         
@@ -24,6 +27,8 @@ struct UserToken: JWTPayload, Authenticatable {
 }
 
 extension User {
+    
+    /// Creates a `UserToken` for the user.
     func token() throws -> UserToken {
         try UserToken(for: self)
     }

@@ -28,12 +28,7 @@ struct PodcastsController: RouteCollection {
     
     /// Returns metadata for all podcasts tracked by the server.
     ///
-    /// - Query Parameters:
-    ///   - `config`: Controls how the podcast configs are utilized.
-    ///     - Valid: `none`, `include`, `override`
-    ///     - Default: `override`
-    ///   - `includeRSS`: `Bool` value controlling if RSS Feeds should be included in the response.
-    ///     - Default: `false`
+    /// - Query Parameters: ``GetAllPodcastsQuery``
     ///
     /// - Returns: `200 Ok` status with an Array of ``PodcastDTO`` in the body.
     private func getAllPodcasts(req: Request) async throws -> [PodcastDTO] {
@@ -47,12 +42,7 @@ struct PodcastsController: RouteCollection {
     
     /// Returns metadata for the podcast with the provided podcast id.
     ///
-    /// - Query Parameters:
-    ///   - `config`: Controls how the podcasts config is utilized.
-    ///     - Valid: `none`, `include`, `override`
-    ///     - Default: `override`
-    ///   - `includeRSS`: `Bool` value controlling if the RSS Feed should be included in the response.
-    ///     - Default: `false`
+    /// - Query Parameters: ``GetPodcastQuery``
     ///
     /// - Returns: `200 Ok` status with a ``PodcastDTO`` in the body.
     private func getPodcast(req: Request) async throws -> PodcastDTO {
@@ -69,14 +59,7 @@ struct PodcastsController: RouteCollection {
     
     /// Returns episode metadata for episodes in the podcast with the provided id.
     ///
-    /// - Query Parameters:
-    ///   - `config`: Controls how the episode configs are utilized.
-    ///     - Valid: `none`, `include`, `override`
-    ///     - Default: `override`
-    ///   - `includeAudio`: `Bool` Controls if audio information is included for the episodes.
-    ///     - Default: `false`
-    ///   - `includeProgress`: Controls if the authenticated users progress is included with the response.
-    ///     - Default: `false`
+    /// - Query Parameters: ``GetEpisodesQuery``
     ///
     /// - Returns: `200 Ok` status with an Array of ``EpisodeDTO`` in the body.
     private func getEpisodes(req: Request) async throws -> [EpisodeDTO] {
@@ -118,8 +101,16 @@ struct PodcastsController: RouteCollection {
 
 extension PodcastsController {
     
+    /// Query parameters for the get all podcasts endpoint.
     struct GetAllPodcastsQuery: Content, Validatable {
+        
+        /// Controls how the podcast configs are utilized.
+        /// - Valid: `none`, `include`, `override`
+        /// - Default: `override`
         let config: ConfigMode?
+        
+        /// Controls if RSS feeds should be included in the response.
+        /// - Default: `false`
         let includeRSS: Bool?
         
         static func validations(_ validations: inout Validations) {
@@ -128,8 +119,16 @@ extension PodcastsController {
         }
     }
     
+    /// Query parameters for the get podcast with id endpoint.
     struct GetPodcastQuery: Content, Validatable {
+        
+        /// Controls how the podcast's config is utilized.
+        /// - Valid: `none`, `include`, `override`
+        /// - Default: `override`
         let config: ConfigMode?
+        
+        /// Controls if the RSS feed should be included in the response.
+        /// - Default: `false`
         let includeRSS: Bool?
         
         static func validations(_ validations: inout Validations) {
@@ -138,9 +137,20 @@ extension PodcastsController {
         }
     }
     
+    /// Query parameters for the get podcast episodes endpoint.
     struct GetEpisodesQuery: Content, Validatable {
+        
+        /// Controls how the episode configs are utilized.
+        /// - Valid: `none`, `include`, `override`
+        /// - Default: `override`
         let config: ConfigMode?
+        
+        /// Controls if audio information is included for the episodes.
+        /// - Default: `false`
         let includeAudio: Bool?
+        
+        /// Controls if the authenticated users progress is included with the response
+        /// - Default: `false`
         let includeProgress: Bool?
         
         static func validations(_ validations: inout Validations) {

@@ -1,40 +1,54 @@
 import Fluent
 import Vapor
 
+/// A podcast episode.
 final class Episode: Model, @unchecked Sendable {
+    
+    /// The unique identifier used by the server.
     @ID
     var id: UUID?
     
+    /// The globally unique identifier used by rss feeds.
     @Field(key: "guid")
     var guid: String
 
+    /// The title of the episode.
     @Field(key: "title")
     var title: String
 
+    /// The date the episode was published.
     @Field(key: "pub_date")
     var pubDate: Date
 
+    /// The description of the episode.
     @Field(key: "description")
     var description: String
 
+    /// The season of the episode.
     @Field(key: "season")
     var season: String?
 
+    /// The episode number.
     @Field(key: "episode_number")
     var episodeNumber: Int?
     
+    /// How long, in seconds, the episode is.
     @Field(key: "duration")
     var duration: Int?
     
+    /// The audio information of the episode.
     @Group(key: "audio")
     var audio: Audio
     
+    /// The non-destructive server config of the episode.
     @Group(key: "config")
     var config: EpisodeConfig
     
+    /// Progress for all accounts on this episode.
     @Children(for: \.$episode)
     var progresses: [EpisodeProgress]
 
+    /// The podcast this episode belongs to.
     @Parent(key: "podcast_id")
     var podcast: Podcast
     
@@ -69,6 +83,8 @@ extension Episode {
 }
 
 extension Episode.Migration {
+    
+    /// Creates the episode table.
     struct Create: AsyncMigration {
         func prepare(on database: any Database) async throws {
             try await database.schema("episode")

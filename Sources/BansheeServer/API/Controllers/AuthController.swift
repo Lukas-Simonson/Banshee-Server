@@ -23,7 +23,8 @@ struct AuthController: RouteCollection {
     
     /// Creates an admin user, can only be used when no admin users exist.
     ///
-    /// Expects a ``RegisterRequest`` for the request body.
+    /// Body: ``RegisterRequest``
+    ///
     /// > Note: The `RegisterRequest.role` property must be `.admin`
     ///
     /// - Returns: `201 Created` status with a ``UserDTO`` body.
@@ -51,7 +52,7 @@ struct AuthController: RouteCollection {
     
     /// Registers a user, and can only be called by admin users.
     ///
-    /// Expects a ``RegisterRequest`` for the request body.
+    /// Body: ``RegisterRequest``
     ///
     /// - Returns: `201 Created` status with a ``UserDTO`` body.
     private func register(req: Request) async throws -> Response {

@@ -2,30 +2,40 @@ import Fluent
 import Vapor
 
 final class Podcast: Model, @unchecked Sendable {
+    
+    /// The unique identifier used by the server.
     @ID
     var id: UUID?
     
+    /// The title of the podcast.
     @Field(key: "title")
     var title: String
     
+    /// A link provided from the RSS feed, for accessing information about the podcast.
     @Field(key: "link")
     var link: URI?
     
+    /// The language the podcast is recorded in.
     @Field(key: "language")
     var language: String
     
+    /// The cover art to use for this podcast.
     @Field(key: "image_url")
     var imageURL: URI?
     
+    /// The description of the podcast.
     @Field(key: "description")
     var description: String
     
+    /// The non-destructive server config of the episode.
     @Group(key: "config")
     var config: PodcastConfig
     
+    /// The episodes that belong to this podcast.
     @Children(for: \.$podcast)
     var episodes: [Episode]
     
+    /// The RSS Feed that provides information about this podcast.
     @OptionalChild(for: \.$podcast)
     var feed: RSSFeed?
     
@@ -48,6 +58,8 @@ extension Podcast {
 }
 
 extension Podcast.Migration {
+    
+    /// Creates the podcast table.
     struct Create: AsyncMigration {
         func prepare(on database: any Database) async throws {
             try await database.schema("podcast")

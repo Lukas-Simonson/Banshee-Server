@@ -12,6 +12,8 @@ struct FeedsController: RouteCollection {
     
     /// Registers a podcasts RSS feed, downloading its metadata.
     ///
+    /// Body: ``AddFeedRequest``
+    ///
     /// - Returns: `201 Created` status with a ``PodcastDTO`` body.
     private func register(req: Request) async throws -> Response {
         let feedRequest = try req.content.decode(AddFeedRequest.self)

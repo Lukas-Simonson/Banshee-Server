@@ -14,6 +14,9 @@ struct EpisodeProgressController: RouteCollection {
         }
     }
     
+    /// Returns the progress of the episode for the authenticated user.
+    ///
+    /// - Returns: `200 Ok` status with an ``EpisodeProgressDTO`` in the body.
     private func getProgress(_ req: Request) async throws -> EpisodeProgressDTO {
         let id = try req.parameters.require("episodeID", as: UUID.self)
         
@@ -27,6 +30,11 @@ struct EpisodeProgressController: RouteCollection {
             .toDTO()
     }
     
+    /// Updates the progress on an episode, for the authenticated user.
+    ///
+    /// - Body: ``UpdateProgressRequest``
+    ///
+    /// - Returns: `202 Accepted` status with an ``EpisodeProgressDTO`` in the body.
     private func updateProgress(_ req: Request) async throws -> Response {
         let id = try req.parameters.require("episodeID", as: UUID.self)
         
@@ -59,6 +67,9 @@ struct EpisodeProgressController: RouteCollection {
             .encodeResponse(status: .accepted, for: req)
     }
     
+    /// Deletes the progress on an episode, for the authenticated user.
+    ///
+    /// - Returns: A `202 Accepted` status.
     private func deleteProgress(_ req: Request) async throws -> Response {
         let id = try req.parameters.require("episodeID", as: UUID.self)
         
@@ -73,8 +84,13 @@ struct EpisodeProgressController: RouteCollection {
 }
 
 extension EpisodeProgressController {
+    
+    /// A request body for updating progress on an episode.
     struct UpdateProgressRequest: Content, Validatable {
+        /// Whether the episode should be considered completed.
         let isCompleted: Bool
+        
+        /// The amount of time, in seconds, that the episode has been listened to.
         let watchTime: Int
         
         static func validations(_ validations: inout Validations) {

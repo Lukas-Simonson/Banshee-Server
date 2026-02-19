@@ -6,6 +6,11 @@ extension XMLDecoder: @retroactive ContentDecoder, @unchecked Sendable {
         try self.decode(decodable, from: Data(buffer: body))
     }
 
+    /// Creates an XMLDecoder for RSS Feeds.
+    ///
+    /// **Changes**
+    /// - Sets a standard date decoding strategy.
+    /// - Ignores itunes namespaces
     static func rss() -> XMLDecoder {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z"
