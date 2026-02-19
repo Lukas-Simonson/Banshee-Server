@@ -21,8 +21,9 @@ struct EpisodeConfigController: RouteCollection {
         try EpisodeConfigDTO.validate(content: req)
         let config = try req.content.decode(EpisodeConfigDTO.self)
         
-        guard let episode = try await req.episodeDAO.read(with: id)
-        else { throw DBError.noItemFound("Episode", with: id) }
+        let episode = try await req.episodeDAO
+            .read(with: id)
+            .unwrap(or: DBError.noItemFound("Episode", with: id))
         
         episode.config = config.toModel()
         try await req.episodeDAO.update(episode)

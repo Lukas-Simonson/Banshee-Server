@@ -20,9 +20,9 @@ extension Optional {
 extension Optional {
     
     /// Unwraps the optional value, or throws the provided error.
-    func unwrap<E: Error>(or error: E) throws(E) -> Wrapped {
+    func unwrap<E: Error>(or error: @autoclosure () -> E) throws(E) -> Wrapped {
         switch self {
-            case .none: throw error
+            case .none: throw error()
             case .some(let value): return value
         }
     }
