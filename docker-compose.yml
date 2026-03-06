@@ -4,7 +4,7 @@ services:
     build:
       context: .
     environment:
-      LOG_LEVEL: error
+      LOG_LEVEL: info
       JWT_SECRET: Fnd76quFpRV980czzWeqUren8urpddLx6pD2YVTtO3U
       STORAGE_PATH: /storage
       METADATA_PATH: /metadata
@@ -12,5 +12,5 @@ services:
       - /Users/lsimonson/Desktop/BansheeTest/storage:/storage
       - /Users/lsimonson/Desktop/BansheeTest/metadata:/metadata
     ports:
-      - '8080:8080'
-    command: ["serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
+      - '6060:6060'
+    command: ["serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "6060"]
