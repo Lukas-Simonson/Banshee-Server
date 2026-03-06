@@ -103,13 +103,19 @@ extension AuthController {
         /// The validations used for the request.
         ///
         /// - `email`: Must be a valid email.
-        /// - `username`: Must be alphanumeric.
+        /// - `username`: Must be alphanumeric and at least 2 characters long.
+        /// - `name`: Must be at least 2 characters long.
+        /// - `password`: Must be at least 8 characters long, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.
         /// - `role`: Must be either `user` or `admin`
         static func validations(_ validations: inout Validations) {
             validations.add("email", as: String.self, is: .email)
-            validations.add("username", as: String.self, is: .alphanumeric)
-            validations.add("name", as: String.self)
-            validations.add("password", as: String.self)
+            validations.add("username", as: String.self, is: .alphanumeric && .count(2...))
+            validations.add("name", as: String.self, is: .count(2...))
+            validations.add(
+                "password",
+                as: String.self,
+                is: .count(8...) && .pattern(#"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\^])[A-Za-z\d@$!%*?&\^]{8,}$"#)
+            )
             validations.add("role", as: String.self, is: .in(["user", "admin"]))
         }
     }

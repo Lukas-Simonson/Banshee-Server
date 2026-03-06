@@ -1,4 +1,5 @@
 import Fluent
+import FluentSQL
 import Vapor
 
 extension Request {
@@ -42,15 +43,17 @@ struct EpisodeDAO {
     ///
     /// - Returns: An optional ``Episode``, `nil` when no matching value is found.
     func read(with id: UUID, includeProgressForUserWithID userID: UUID? = nil) async throws -> Episode? {
-        try await Episode.query(on: db)
-            .filter(\.$id == id)
-            .when(userID != nil) { query in
-                query
-                    .join(EpisodeProgress.self, on: \Episode.$id == \EpisodeProgress.$episode.$id)
-                    .filter(EpisodeProgress.self, \.$user.$id == userID!)
-                    .limit(1)
-            }
-            .first()
+        if let userID, let sql = db as? any SQLDatabase {
+            return try await sql.raw("""
+                SELECT * FROM episode
+                LEFT JOIN episode_progress
+                ON episode_progress.episode_id = episode.id 
+                AND episode_progress.user_id = \(bind: userID)
+                WHERE episode.id = \(bind: id);
+            """).first(decodingFluent: Episode.self)
+        }
+        
+        return try await Episode.find(id, on: db)
     }
     
     /// Updates the provided episode onto the database.

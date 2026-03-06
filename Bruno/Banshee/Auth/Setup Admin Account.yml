@@ -15,7 +15,7 @@ http:
       //   "email": "example@getbanshee.app",
       //   "username": "BastillaGravewynd",
       //   "name": "Bastilla Gravewynd",
-      //   "password": "password123",
+      //   "password": "Password123!",
       //   "role": "admin" // Must Be: "admin"
       // }
 

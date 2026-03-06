@@ -17,16 +17,9 @@ config:
 request:
   auth:
     type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmF0aW9uIjo2NDA5MjIxMTIwMCwicm9sZSI6ImFkbWluIiwic3ViamVjdCI6Ijg1MkFFQTA5LTc4MDEtNEZGRC04RjZCLTdGODkxRUYzNzA0RCJ9.D58Q1egYypxTCmEYIjkzuT_WdTUXK3YgCwH0gPjkSd8
+    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4iLCJzdWJqZWN0IjoiQzUzMjVDMDEtRUMxQi00QjI3LTgzQkQtNUU1QTk3RTQ5MzVCIiwiZXhwaXJhdGlvbiI6NjQwOTIyMTEyMDB9.O8amEOFDPYw9DzOG6dk7mlNDkattxGDhhBR48npAzIc
   variables:
     - name: baseURL
       value: http://localhost:8080
 bundled: false
-extensions:
-  ignore:
-    - node_modules
-    - .git
-  presets:
-    request:
-      type: http
-      url: "{{baseURL}}/api/"
+extensions: {}

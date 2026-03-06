@@ -49,12 +49,12 @@ struct EpisodeProgressController: RouteCollection {
         
         if let progress {
             progress.isCompleted = progressRequest.isCompleted
-            progress.watchTime = progressRequest.watchTime
+            progress.watchTime = progressRequest.watchTime ?? 0
             progress.lastUpdated = .now
         } else {
             progress = EpisodeProgress(
                 isCompleted: progressRequest.isCompleted,
-                watchTime: progressRequest.watchTime,
+                watchTime: progressRequest.watchTime ?? 0,
                 startedOn: .now,
                 lastUpdated: .now
             )
@@ -91,11 +91,11 @@ extension EpisodeProgressController {
         let isCompleted: Bool
         
         /// The amount of time, in seconds, that the episode has been listened to.
-        let watchTime: Int
+        let watchTime: Int?
         
         static func validations(_ validations: inout Validations) {
             validations.add("isCompleted", as: Bool.self)
-            validations.add("watchTime", as: Int.self)
+            validations.add("watchTime", as: Int.self, required: false)
         }
     }
 }
