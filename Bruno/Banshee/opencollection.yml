@@ -20,6 +20,6 @@ request:
     token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4iLCJzdWJqZWN0IjoiQzUzMjVDMDEtRUMxQi00QjI3LTgzQkQtNUU1QTk3RTQ5MzVCIiwiZXhwaXJhdGlvbiI6NjQwOTIyMTEyMDB9.O8amEOFDPYw9DzOG6dk7mlNDkattxGDhhBR48npAzIc
   variables:
     - name: baseURL
-      value: http://localhost:6060
+      value: https://localhost:6060
 bundled: false
 extensions: {}

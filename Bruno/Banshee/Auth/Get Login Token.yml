@@ -4,7 +4,7 @@ info:
   seq: 3
 
 http:
-  method: GET
+  method: POST
   url: "{{baseURL}}/api/auth/login"
   auth:
     type: basic

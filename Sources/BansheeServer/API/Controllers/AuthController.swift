@@ -18,7 +18,7 @@ struct AuthController: RouteCollection {
             .post("register", use: register)
         
         auth.grouped(UserBasicAuthenticator())
-            .get("login", use: login)
+            .post("login", use: login)
     }
     
     /// Creates an admin user, can only be used when no admin users exist.
