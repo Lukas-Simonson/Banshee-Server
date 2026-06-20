@@ -18,7 +18,7 @@ final class RSSFeed: Model, @unchecked Sendable {
     
     /// How long to wait between updates of the rss feed.
     /// Defaults to 1 day.
-    @Field(key: "update_interval")
+    @OptionalField(key: "update_interval")
     var updateInterval: TimeInterval?
     
     /// The podcast this rss feed is used to fetch.

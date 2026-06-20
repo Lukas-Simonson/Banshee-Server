@@ -41,7 +41,7 @@ let package = Package(
             dependencies: [
                 .target(name: "BansheeServer"),
                 .product(name: "VaporTesting", package: "vapor"),
-                .product(name: "Fakery", package: "Fakery"),
+                .product(name: "Fakery", package: "Fakery")
             ],
             swiftSettings: swiftSettings
         )

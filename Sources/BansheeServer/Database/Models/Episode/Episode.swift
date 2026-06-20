@@ -29,11 +29,11 @@ final class Episode: Model, @unchecked Sendable {
     var season: String?
 
     /// The episode number.
-    @Field(key: "episode_number")
+    @OptionalField(key: "episode_number")
     var episodeNumber: Int?
     
     /// How long, in seconds, the episode is.
-    @Field(key: "duration")
+    @OptionalField(key: "duration")
     var duration: Int?
     
     /// The audio information of the episode.

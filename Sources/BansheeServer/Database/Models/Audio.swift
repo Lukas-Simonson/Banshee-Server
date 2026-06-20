@@ -5,19 +5,19 @@ import Vapor
 final class Audio: Fields, @unchecked Sendable {
     
     /// The remote / source location of the audio file.
-    @Field(key: "remote_url")
+    @OptionalField(key: "remote_url")
     var remoteURL: URI?
     
     /// The local / cached location of the audio file.
-    @Field(key: "local_url")
+    @OptionalField(key: "local_url")
     var localURL: URI?
     
     /// The size of the audio file in bytes.
-    @Field(key: "length")
+    @OptionalField(key: "length")
     var length: Int64?
     
     /// The type of audio.
-    @Field(key: "type")
+    @OptionalField(key: "type")
     var type: String?
     
     init() {}

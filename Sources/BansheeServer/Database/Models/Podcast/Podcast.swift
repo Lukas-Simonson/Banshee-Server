@@ -12,7 +12,7 @@ final class Podcast: Model, @unchecked Sendable {
     var title: String
     
     /// A link provided from the RSS feed, for accessing information about the podcast.
-    @Field(key: "link")
+    @OptionalField(key: "link")
     var link: URI?
     
     /// The language the podcast is recorded in.
@@ -20,7 +20,7 @@ final class Podcast: Model, @unchecked Sendable {
     var language: String
     
     /// The cover art to use for this podcast.
-    @Field(key: "image_url")
+    @OptionalField(key: "image_url")
     var imageURL: URI?
     
     /// The description of the podcast.
