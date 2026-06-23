@@ -65,6 +65,7 @@ struct Configure {
         
         app.migrations.add(Episode.Migration.Create())
         app.migrations.add(EpisodeProgress.Migration.Create())
+        app.migrations.add(EpisodeDownload.Migration.Create())
         
         // Perform Migrations
         try await app.autoMigrate()
