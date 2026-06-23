@@ -10,6 +10,18 @@ extension Request {
 }
 
 /// The access object used to read ``EpisodeDownload`` information from a database.
-struct EpisodeDownloadDAO {
+struct EpisodeDownloadDAO: Sendable {
     let db: any Database
+    
+    func readFreshDownloads(_ amount: Int) async throws -> [EpisodeDownload] {
+        try await EpisodeDownload.query(on: db)
+            .filter(\.$finishedAt == nil)
+            .sort(\.$queuedAt, .ascending)
+            .limit(amount)
+            .all()
+    }
+    
+    func updateProgress(on episode: EpisodeDownload) async throws {
+        try await episode.update(on: db)
+    }
 }
