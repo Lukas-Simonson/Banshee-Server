@@ -1,6 +1,23 @@
 import NIOCore
 import Vapor
 
+extension Application {
+    struct DownloadManagerKey: StorageKey {
+        typealias Value = DownloadManager
+    }
+    
+    var downloadManager: DownloadManager {
+        get {
+            let manager = storage[DownloadManagerKey.self]
+            precondition(manager != nil, "DownloadManager not added to application before use.")
+            return manager!
+        }
+        set {
+            storage[DownloadManagerKey.self] = newValue
+        }
+    }
+}
+
 final actor DownloadManager {
     private let client: HTTPClient
     private let data: any DownloadData

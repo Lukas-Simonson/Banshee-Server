@@ -17,6 +17,8 @@ import XMLCoder
 ///
 /// Extra Environment Variables
 /// - `SERVER_NAME`: The name of the server. Defaults to `Banshee`
+/// - `MAX_CONCURRENT_DOWNLOADS`: The max number of concurrent downloads that the server will run (default: 3)
+/// - `DOWNLOAD_TIMEOUT`: The number of seconds before an episode download is timed-out (default: 3600)
 public func configure(_ app: Application) async throws {
     // Configures Application
     try await Configure(app: app)
@@ -34,6 +36,7 @@ struct Configure {
         
         app.passwords.use(.bcrypt)
         try await database()
+        try await downloads()
         try await jwt()
         try await xml()
     }
@@ -71,6 +74,16 @@ struct Configure {
         try await app.autoMigrate()
     }
     
+    private func downloads() async throws {
+        app.downloadManager = DownloadManager(
+            client: HTTPClient(eventLoopGroup: app.eventLoopGroup),
+            data: EpisodeDownloadDAO(db: app.db),
+            files: FileManager.default,
+            downloadTimeoutSeconds: Int64(value(for: "DOWNLOAD_TIMEOUT", or: "3600")) ?? 3600,
+            maxConcurrentDownloads: Int(value(for: "MAX_CONCURRENT_DOWNLOADS", or: "3")) ?? 3
+        )
+    }
+    
     /// Sets up JWT secret.
     private func jwt() async throws {
         await app.jwt.keys.add(hmac: HMACKey(stringLiteral: try value(for: "JWT_SECRET")), digestAlgorithm: .sha256)
@@ -102,6 +115,13 @@ struct Configure {
         #else
         throw ConfigError.missingExpectedValue(key: key)
         #endif
+    }
+    
+    /// Gets an environment value for a given key, or return a provided default.
+    ///
+    /// > NOTE: When running in `DEBUG`
+    private func value(for key: String, or defaultValue: String) -> String {
+        (try? value(for: key)) ?? defaultValue
     }
     
     private enum ConfigError: LocalizedError {
