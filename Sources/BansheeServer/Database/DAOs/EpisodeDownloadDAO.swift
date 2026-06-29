@@ -13,6 +13,7 @@ extension Request {
 struct EpisodeDownloadDAO: Sendable {
     let db: any Database
     
+    /// Reads `amount` ``EpisodeDownload`` filtering completed downloads, and sorting oldest to newest.
     func readFreshDownloads(_ amount: Int) async throws -> [EpisodeDownload] {
         try await EpisodeDownload.query(on: db)
             .filter(\.$finishedAt == nil)
@@ -21,7 +22,8 @@ struct EpisodeDownloadDAO: Sendable {
             .all()
     }
     
-    func updateProgress(on episode: EpisodeDownload) async throws {
+    /// Updates an ``EpisodeDownload``.
+    func update(_ episode: EpisodeDownload) async throws {
         try await episode.update(on: db)
     }
 }

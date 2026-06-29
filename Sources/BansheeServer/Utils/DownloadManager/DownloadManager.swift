@@ -87,7 +87,7 @@ extension DownloadManager {
                     // Update episode download progress if it has gone past a full percent and is not completed.
                     if episodeDownload.progress - percent > 1 && percent < 99 {
                         Task {
-                            try await self?.data.updateProgress(on: episodeDownload)
+                            try await self?.data.update(episodeDownload)
                         }
                     }
                 }
@@ -109,7 +109,7 @@ extension DownloadManager {
             
             episodeDownload.finishedAt = .now
             episodeDownload.progress = 100
-            try await self?.data.updateProgress(on: episodeDownload)
+            try await self?.data.update(episodeDownload)
             await self?.removeCurrentDownload(episodeDownload)
             
             await self?.start()
