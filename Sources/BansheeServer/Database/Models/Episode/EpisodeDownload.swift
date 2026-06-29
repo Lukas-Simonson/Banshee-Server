@@ -10,7 +10,7 @@ final class EpisodeDownload: Model, @unchecked Sendable {
     
     /// The local path this download is saved to.
     @Field(key: "path")
-    var path: URI
+    var path: URL
     
     /// The remote location this download should be saved from.
     @Field(key: "remote")
@@ -36,12 +36,12 @@ final class EpisodeDownload: Model, @unchecked Sendable {
     
     init() {}
     
-    init(id: UUID? = nil, path: URI, remote: URI, episode: Episode) {
+    init(id: UUID? = nil, path: URL, remote: URI, episode: Episode) {
         self.id = id
         self.path = path
         self.remote = remote
         self.progress = 0.0
-        self.episode = episode
+        self.$episode.id = episode.id
     }
 }
 

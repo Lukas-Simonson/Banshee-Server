@@ -62,11 +62,14 @@ struct EpisodeDAO {
     ///   - ids: The array of ids to fetch with
     ///
     /// - Returns: An array of ``Episode``.
-    func readAll(in ids: [UUID], includeDownloads: Bool = false) async throws -> [Episode] {
+    func readAll(in ids: [UUID], includeDownloads: Bool = false, includePodcast: Bool = false) async throws -> [Episode] {
         try await Episode.query(on: db)
             .filter(\.$id ~~ ids)
             .when(includeDownloads) { query in
                 query.with(\.$download)
+            }
+            .when(includePodcast) { query in
+                query.with(\.$podcast)
             }
             .all()
     }

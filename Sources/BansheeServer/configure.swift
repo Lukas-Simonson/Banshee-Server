@@ -19,6 +19,7 @@ import XMLCoder
 /// - `SERVER_NAME`: The name of the server. Defaults to `Banshee`
 /// - `MAX_CONCURRENT_DOWNLOADS`: The max number of concurrent downloads that the server will run (default: 3)
 /// - `DOWNLOAD_TIMEOUT`: The number of seconds before an episode download is timed-out (default: 3600)
+/// - `MAX_DOWNLOAD_REDIRECT`: The max number of redirects an episode download can go through before failing (default: 5)
 public func configure(_ app: Application) async throws {
     // Configures Application
     try await Configure(app: app)
@@ -77,7 +78,15 @@ struct Configure {
     private func downloads() async throws {
         try app.downloadManager = DownloadManager(
             at: value(for: "STORAGE_PATH"),
-            client: HTTPClient(eventLoopGroup: app.eventLoopGroup),
+            client: HTTPClient(
+                eventLoopGroup: app.eventLoopGroup,
+                configuration: HTTPClient.Configuration(
+                    redirectConfiguration: .follow(
+                        max: Int(value(for: "MAX_DOWNLOAD_REDIRECT", or: "5")) ?? 5,
+                        allowCycles: false
+                    ),
+                )
+            ),
             data: EpisodeDownloadDAO(db: app.db),
             files: FileManager.default,
             downloadTimeoutSeconds: Int64(value(for: "DOWNLOAD_TIMEOUT", or: "3600")) ?? 3600,

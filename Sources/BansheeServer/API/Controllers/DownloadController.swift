@@ -23,31 +23,31 @@ struct DownloadController: RouteCollection {
         let downloadRequest = try req.content.decode(DownloadRequest.self)
         
         // Get the matching episodes
-        let episodes = try await req.episodeDAO.readAll(in: downloadRequest.episodes, includeDownloads: true)
+        let episodes = try await req.episodeDAO.readAll(in: downloadRequest.episodes, includeDownloads: true, includePodcast: true)
         
         var response = DownloadResponse(missing: Set(downloadRequest.episodes))
-        var downloads = [EpisodeDownload()]
+        var downloads = [EpisodeDownload]()
         
         for episode in episodes {
             let id = try episode.requireID()
             response.missing.remove(id)
             
-            guard episode.download != nil
+            guard episode.download == nil
             else { response.duplicate.insert(id); continue }
             
             guard let audioURL = episode.audio.remoteURL
             else { response.missingAudio.insert(id); continue }
             
-            // let podcastFolder = episode.podcast.title
             let podcastFolder = FileUtils.sanitize(episode.podcast.title)
             let seasonFolder = FileUtils.folderName(for: episode)
             let filename = FileUtils.filename(for: episode)
             let `extension` = FileUtils.extension(from: episode.audio.type)
             
-            let destination = "\(req.application.downloadManager.downloadPath)/\(podcastFolder)/\(seasonFolder)/\(filename)\(`extension`)"
+            let destination = "\(req.application.downloadManager.downloadPath)/\(podcastFolder)/\(seasonFolder)/\(filename).\(`extension`)"
             
+            response.queued.insert(id)
             downloads.append(EpisodeDownload(
-                path: URI(string: destination),
+                path: URL(string: destination)!,
                 remote: audioURL,
                 episode: episode
             ))

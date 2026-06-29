@@ -35,7 +35,7 @@ enum FileUtils {
     
     /// Provides a folder name for an episode based on its season.
     nonisolated static func folderName(for episode: Episode) -> String {
-        guard let season = episode.season else { return "Other" }
+        guard let season = episode.config.season ?? episode.season else { return "Other" }
 
         if let number = Int(season) {
             return "Season \(pad(number))"
@@ -49,18 +49,18 @@ enum FileUtils {
     ///
     /// Does **NOT** include the extension for the file.
     nonisolated static func filename(for episode: Episode) -> String {
-        let season = if let number = Int(episode.season ?? "") {
+        let season = if let number = Int(episode.config.season ?? episode.season ?? "") {
             "[S\(pad(number))]"
-        } else if let name = episode.season {
+        } else if let name = episode.config.season ?? episode.season {
             "[\(name)]"
         } else {
             "[Other]"
         }
         
-        let epNumber = if let number = episode.episodeNumber {
+        let epNumber = if let number = episode.config.episodeNumber ?? episode.episodeNumber {
             "[E\(pad(number))]"
         } else {
-            "[E???]"
+            "[D\(episode.pubDate.formatted(.iso8601.year().month().day().dateSeparator(.dash)))]"
         }
         
         return sanitize("\(season)\(epNumber) - \(episode.title)")

@@ -35,12 +35,13 @@ final actor DownloadManager {
         self.files = files
         self.downloadTimeoutSeconds = downloadTimeoutSeconds
         self.maxConcurrentDownloads = maxConcurrentDownloads
+        Task { await self.start() }
     }
     
     /// Starts a new download operation if the queue isn't full.
     func start() {
         guard current.count < maxConcurrentDownloads else { return }
-        
+                
         Task.detached(priority: .background) { [self] in
             do {
                 // Request downloads | double to help prevent racing overlap
@@ -63,7 +64,7 @@ extension DownloadManager {
     ///
     /// Returns `nil` when none of the downloads are valid, or when there are already `concurrentDownloads` downloads running.
     private func newCurrentDownload(from episodeDownloads: [EpisodeDownload]) -> EpisodeDownload? {
-        guard current.count <= maxConcurrentDownloads else { return nil }
+        guard current.count < maxConcurrentDownloads else { return nil }
         
         for episodeDownload in episodeDownloads {
             if !current.contains(where: { $0.id == episodeDownload.id }) {
@@ -88,50 +89,55 @@ extension DownloadManager {
         Task.detached(priority: .background) { [files, weak self] in
             // Check if the download has already started.
             var byte: Int64 = 0
-            if files.fileExists(atPath: episodeDownload.path.string) {
-                let attributes = try? files.attributesOfItem(atPath: episodeDownload.path.string)
+            if files.fileExists(atPath: episodeDownload.path.absoluteString) {
+                let attributes = try? files.attributesOfItem(atPath: episodeDownload.path.absoluteString)
                 byte = (attributes?[.size] as? Int64) ?? 0
             }
             
-            var request = try HTTPClient.Request(url: episodeDownload.remote.string)
-            if byte > 0 {
-                request.headers.add(name: "Range", value: "bytes=\(byte)-")
-            }
-            
-            let delegate = StreamingDownloadDelegate(
-                destinationPath: episodeDownload.path.string,
-                expectedBytes: nil,
-                resumeFromByte: byte,
-                onProgress: { [weak self] percent in
-                    // Update episode download progress if it has gone past a full percent and is not completed.
-                    if episodeDownload.progress - percent > 1 && percent < 99 {
-                        Task {
-                            try await self?.data.update(episodeDownload)
+            do {
+                
+                var request = try HTTPClient.Request(url: episodeDownload.remote.string)
+                if byte > 0 {
+                    request.headers.add(name: "Range", value: "bytes=\(byte)-")
+                }
+                
+                let delegate = StreamingDownloadDelegate(
+                    destinationPath: episodeDownload.path.absoluteString.removingPercentEncoding!,
+                    expectedBytes: nil,
+                    resumeFromByte: byte,
+                    onProgress: { [weak self] percent in
+                        // Update episode download progress if it has gone past a full percent and is not completed.
+                        if episodeDownload.progress - percent > 1 && percent < 99 {
+                            Task {
+                                try await self?.data.update(episodeDownload)
+                            }
                         }
                     }
+                )
+                
+                guard let client = self?.client,
+                      let timeout = self?.downloadTimeoutSeconds
+                else { return }
+                
+                let result = try await client.execute(
+                    request: request,
+                    delegate: delegate,
+                    deadline: .now() + .seconds(timeout)
+                ).futureResult.get()
+                
+                guard result.success else {
+                    throw result.error!
                 }
-            )
-            
-            guard let client = self?.client,
-                  let timeout = self?.downloadTimeoutSeconds
-            else { return }
-            
-            let result = try await client.execute(
-                request: request,
-                delegate: delegate,
-                deadline: .now() + .seconds(timeout)
-            ).futureResult.get()
-            
-            guard result.success else {
-                throw result.error!
+                
+                episodeDownload.finishedAt = .now
+                episodeDownload.progress = 100
+                try await self?.data.update(episodeDownload)
+                await self?.removeCurrentDownload(episodeDownload)
+                
+                await self?.start()
+            } catch {
+                print("Failed to download: \(episodeDownload.id!) | Error: \(error)")
             }
-            
-            episodeDownload.finishedAt = .now
-            episodeDownload.progress = 100
-            try await self?.data.update(episodeDownload)
-            await self?.removeCurrentDownload(episodeDownload)
-            
-            await self?.start()
         }
     }
 }
