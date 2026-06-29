@@ -47,6 +47,9 @@ final class Episode: Model, @unchecked Sendable {
     /// Progress for all accounts on this episode.
     @Children(for: \.$episode)
     var progresses: [EpisodeProgress]
+    
+    @OptionalChild(for: \.$episode)
+    var download: EpisodeDownload?
 
     /// The podcast this episode belongs to.
     @Parent(key: "podcast_id")

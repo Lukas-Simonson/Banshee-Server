@@ -75,7 +75,8 @@ struct Configure {
     }
     
     private func downloads() async throws {
-        app.downloadManager = DownloadManager(
+        try app.downloadManager = DownloadManager(
+            at: value(for: "STORAGE_PATH"),
             client: HTTPClient(eventLoopGroup: app.eventLoopGroup),
             data: EpisodeDownloadDAO(db: app.db),
             files: FileManager.default,

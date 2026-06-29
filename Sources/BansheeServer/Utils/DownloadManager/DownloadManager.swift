@@ -23,11 +23,13 @@ final actor DownloadManager {
     private let data: any DownloadData
     private let files: FileManager
     
+    nonisolated let downloadPath: String
     private let downloadTimeoutSeconds: Int64
     private let maxConcurrentDownloads: Int
     private var current = [EpisodeDownload]()
     
-    init(client: HTTPClient, data: any DownloadData, files: FileManager, downloadTimeoutSeconds: Int64 = 3600, maxConcurrentDownloads: Int = 3) {
+    init(at path: String, client: HTTPClient, data: any DownloadData, files: FileManager, downloadTimeoutSeconds: Int64 = 3600, maxConcurrentDownloads: Int = 3) {
+        self.downloadPath = path
         self.client = client
         self.data = data
         self.files = files
