@@ -110,10 +110,7 @@ struct Configure {
         
         app.queues.use(.fluent(jobsDB))
         app.queues.schedule(UpdateFeedJob())
-            .every(seconds: 5)
-            // .every(minutes: Int(value(for: "RSS_JOB_INTERVAL", or: "60")) ?? 60)
-        
-        let job = UpdateFeedJob()
+            .every(minutes: Int(value(for: "RSS_JOB_INTERVAL", or: "60")) ?? 60)
         
         try app.queues.startScheduledJobs()
     }
