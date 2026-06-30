@@ -25,6 +25,11 @@ final class RSSFeed: Model, @unchecked Sendable {
     @Parent(key: "podcast_id")
     var podcast: Podcast
     
+    var isExpired: Bool {
+        guard let updateInterval else { return false }
+        return lastFetched.advanced(by: updateInterval) < .now
+    }
+    
     init() { }
     
     init(url: URI) {

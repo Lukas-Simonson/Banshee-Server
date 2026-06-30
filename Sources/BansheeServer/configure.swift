@@ -1,6 +1,7 @@
 import Fluent
 import FluentSQLiteDriver
 import JWT
+import QueuesFluentDriver
 import Vapor
 import XMLCoder
 
@@ -20,6 +21,7 @@ import XMLCoder
 /// - `MAX_CONCURRENT_DOWNLOADS`: The max number of concurrent downloads that the server will run (default: 3)
 /// - `DOWNLOAD_TIMEOUT`: The number of seconds before an episode download is timed-out (default: 3600)
 /// - `MAX_DOWNLOAD_REDIRECT`: The max number of redirects an episode download can go through before failing (default: 5)
+/// - `RSS_JOB_INTERVAL`: How often, in minutes, a job should be run to check for out of date feeds. (default: 60)
 public func configure(_ app: Application) async throws {
     // Configures Application
     try await Configure(app: app)
@@ -38,6 +40,7 @@ struct Configure {
         app.passwords.use(.bcrypt)
         try await database()
         try await downloads()
+        try await jobs()
         try await jwt()
         try await xml()
     }
@@ -75,6 +78,7 @@ struct Configure {
         try await app.autoMigrate()
     }
     
+    /// Sets up the ``DownloadManager``
     private func downloads() async throws {
         try app.downloadManager = DownloadManager(
             at: value(for: "STORAGE_PATH"),
@@ -92,6 +96,23 @@ struct Configure {
             downloadTimeoutSeconds: Int64(value(for: "DOWNLOAD_TIMEOUT", or: "3600")) ?? 3600,
             maxConcurrentDownloads: Int(value(for: "MAX_CONCURRENT_DOWNLOADS", or: "3")) ?? 3
         )
+    }
+    
+    private func jobs() async throws {
+        let metadata = try value(for: "METADATA_PATH")
+        let jobsDB = DatabaseID(string: "jobs_db")
+        
+        if app.environment == .testing {
+            app.databases.use(.sqlite(.memory), as: jobsDB, isDefault: false)
+        } else {
+            app.databases.use(.sqlite(.file("\(metadata)/banshee_jobs.sqlite")), as: jobsDB, isDefault: false)
+        }
+        
+        app.queues.use(.fluent(jobsDB))
+        app.queues.schedule(UpdateFeedJob())
+            .every(minutes: Int(value(for: "RSS_JOB_INTERVAL", or: "60")) ?? 60)
+        
+        try app.queues.startScheduledJobs()
     }
     
     /// Sets up JWT secret.
