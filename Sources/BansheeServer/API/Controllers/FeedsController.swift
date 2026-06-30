@@ -16,6 +16,7 @@ struct FeedsController: RouteCollection {
     ///
     /// - Returns: `201 Created` status with a ``PodcastDTO`` body.
     private func register(req: Request) async throws -> Response {
+        try AddFeedRequest.validate(content: req)
         let feedRequest = try req.content.decode(AddFeedRequest.self)
         
         // Check if feed exists
@@ -27,7 +28,7 @@ struct FeedsController: RouteCollection {
             .content
             .decode(RSS.self)
         
-        let feed = RSSFeed(url: feedRequest.url)
+        let feed = RSSFeed(url: feedRequest.url, downloadNew: feedRequest.autoDownload != .none)
         let podcast = rss.channel.toModel()
         let episodes = rss.channel.item.map { $0.toModel() }
   
@@ -41,9 +42,23 @@ struct FeedsController: RouteCollection {
 extension FeedsController {
     
     /// Request body intended for registering an RSS feed.
-    struct AddFeedRequest: Content {
+    struct AddFeedRequest: Content, Validatable {
         /// The URL of the RSS Feed.
         let url: URI
+        
+        /// How to automatically handle episode downloads.
+        let autoDownload: DownloadMode
+        
+        static func validations(_ validations: inout Validations) {
+            validations.add("url", as: String.self, is: .url, required: true)
+            validations.add("autoDownload", as: String.self, is: .in("new", "new_and_existing", "none"), required: true)
+        }
+        
+        enum DownloadMode: String, Content {
+            case new = "new"
+            case newAndExisting = "new_and_existing"
+            case none = "none"
+        }
     }
     
     enum FeedError {

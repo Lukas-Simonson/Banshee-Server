@@ -21,6 +21,10 @@ final class RSSFeed: Model, @unchecked Sendable {
     @Field(key: "update_interval")
     var updateInterval: TimeInterval?
     
+    /// If new episodes should be downloaded when they are fetched.
+    @Field(key: "download_new")
+    var downloadNew: Bool
+    
     /// The podcast this rss feed is used to fetch.
     @Parent(key: "podcast_id")
     var podcast: Podcast
@@ -32,8 +36,9 @@ final class RSSFeed: Model, @unchecked Sendable {
     
     init() { }
     
-    init(url: URI) {
+    init(url: URI, downloadNew: Bool) {
         self.url = url
+        self.downloadNew = downloadNew
         self.lastFetched = .now
         self.updateInterval = 86_400 // 1 day
     }
