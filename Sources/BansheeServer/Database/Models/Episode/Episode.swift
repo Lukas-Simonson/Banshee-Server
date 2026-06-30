@@ -75,8 +75,35 @@ final class Episode: Model, @unchecked Sendable {
         self.episodeNumber = episodeNumber
         self.duration = duration
         self.audio = audio
+        self.config = EpisodeConfig(
+            title: nil,
+            description: nil,
+            imageURL: nil,
+            season: nil,
+            episodeNumber: nil
+        )
     }
 }
+
+extension Episode {
+    
+    /// Updates the episode with all new values from an ``EpisodeRSS``
+    func update(from dto: EpisodeRSS) {
+        self.title = dto.title
+        self.pubDate = dto.pubDate
+        self.description = dto.description
+        self.season = dto.season
+        self.episodeNumber = dto.episode
+        self.duration = dto.duration?.seconds
+    }
+
+    static func != (lhs: Episode, rhs: EpisodeRSS) -> Bool {
+        lhs.title != rhs.title || lhs.pubDate != rhs.pubDate ||
+        lhs.description != rhs.description || lhs.season != rhs.season ||
+        lhs.episodeNumber != rhs.episode
+    }
+}
+
 
 // MARK: - Model Conformance
 extension Episode {
