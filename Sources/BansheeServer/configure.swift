@@ -17,6 +17,9 @@ import XMLCoder
 ///
 /// Extra Environment Variables
 /// - `SERVER_NAME`: The name of the server. Defaults to `Banshee`
+/// - `MAX_CONCURRENT_DOWNLOADS`: The max number of concurrent downloads that the server will run (default: 3)
+/// - `DOWNLOAD_TIMEOUT`: The number of seconds before an episode download is timed-out (default: 3600)
+/// - `MAX_DOWNLOAD_REDIRECT`: The max number of redirects an episode download can go through before failing (default: 5)
 public func configure(_ app: Application) async throws {
     // Configures Application
     try await Configure(app: app)
@@ -34,6 +37,7 @@ struct Configure {
         
         app.passwords.use(.bcrypt)
         try await database()
+        try await downloads()
         try await jwt()
         try await xml()
     }
@@ -65,9 +69,29 @@ struct Configure {
         
         app.migrations.add(Episode.Migration.Create())
         app.migrations.add(EpisodeProgress.Migration.Create())
+        app.migrations.add(EpisodeDownload.Migration.Create())
         
         // Perform Migrations
         try await app.autoMigrate()
+    }
+    
+    private func downloads() async throws {
+        try app.downloadManager = DownloadManager(
+            at: value(for: "STORAGE_PATH"),
+            client: HTTPClient(
+                eventLoopGroup: app.eventLoopGroup,
+                configuration: HTTPClient.Configuration(
+                    redirectConfiguration: .follow(
+                        max: Int(value(for: "MAX_DOWNLOAD_REDIRECT", or: "5")) ?? 5,
+                        allowCycles: false
+                    ),
+                )
+            ),
+            data: EpisodeDownloadDAO(db: app.db),
+            files: FileManager.default,
+            downloadTimeoutSeconds: Int64(value(for: "DOWNLOAD_TIMEOUT", or: "3600")) ?? 3600,
+            maxConcurrentDownloads: Int(value(for: "MAX_CONCURRENT_DOWNLOADS", or: "3")) ?? 3
+        )
     }
     
     /// Sets up JWT secret.
@@ -101,6 +125,13 @@ struct Configure {
         #else
         throw ConfigError.missingExpectedValue(key: key)
         #endif
+    }
+    
+    /// Gets an environment value for a given key, or return a provided default.
+    ///
+    /// > NOTE: When running in `DEBUG`
+    private func value(for key: String, or defaultValue: String) -> String {
+        (try? value(for: key)) ?? defaultValue
     }
     
     private enum ConfigError: LocalizedError {
