@@ -60,6 +60,7 @@ extension RSSFeed.Migration {
                 .field("url", .string, .required)
                 .field("last_fetched", .datetime, .required)
                 .field("update_interval", .double)
+                .field("download_new", .bool, .required)
                 .field("podcast_id", .uuid, .required, .references("podcast", "id", onDelete: .cascade))
                 .unique(on: "url") // Unique RSS Feeds
                 .unique(on: "podcast_id")
