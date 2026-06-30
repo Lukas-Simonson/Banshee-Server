@@ -63,7 +63,7 @@ enum FileUtils {
             "[D\(episode.pubDate.formatted(.iso8601.year().month().day().dateSeparator(.dash)))]"
         }
         
-        return sanitize("\(season)\(epNumber) - \(episode.title)")
+        return sanitize("\(season)\(epNumber) - \(episode.title).\(`extension`(from: episode.audio.type))")
     }
     
     nonisolated static func pad(_ number: Int, by count: Int = 3) -> String {

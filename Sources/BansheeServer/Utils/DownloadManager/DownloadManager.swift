@@ -56,6 +56,18 @@ final actor DownloadManager {
             }
         }
     }
+    
+    /// Creates a file path for a provided episode.
+    ///
+    /// > WARNING: The episode must preload its `podcast`.
+    nonisolated func path(for episode: Episode) -> String {
+        return [
+            downloadPath,                               // Root Location
+            FileUtils.sanitize(episode.podcast.title),  // Podcast Folder
+            FileUtils.folderName(for: episode),         // Season Folder
+            FileUtils.filename(for: episode),           // Filename
+        ].joined(separator: "/")
+    }
 }
 
 // MARK: Download Helper Functions

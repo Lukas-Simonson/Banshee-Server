@@ -38,12 +38,7 @@ struct DownloadController: RouteCollection {
             guard let audioURL = episode.audio.remoteURL
             else { response.missingAudio.insert(id); continue }
             
-            let podcastFolder = FileUtils.sanitize(episode.podcast.title)
-            let seasonFolder = FileUtils.folderName(for: episode)
-            let filename = FileUtils.filename(for: episode)
-            let `extension` = FileUtils.extension(from: episode.audio.type)
-            
-            let destination = "\(req.application.downloadManager.downloadPath)/\(podcastFolder)/\(seasonFolder)/\(filename).\(`extension`)"
+            let destination = req.application.downloadManager.path(for: episode)
             
             response.queued.insert(id)
             downloads.append(EpisodeDownload(

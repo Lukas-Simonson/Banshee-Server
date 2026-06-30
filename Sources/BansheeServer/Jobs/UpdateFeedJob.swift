@@ -45,8 +45,23 @@ struct UpdateFeedJob: AsyncScheduledJob {
             } else { // New episode
                 let model = update.toModel()
                 try await feed.podcast.$episodes.create(model, on: context.application.db) // Could probably be batched to be faster.
+                model.$podcast.value = feed.podcast // this is a hack, could cause issues.
+                
+                // If the feed should auto-download new episodes, queue the download.
+                if feed.downloadNew, let remote = model.audio.remoteURL {
+                    let destination = context.application.downloadManager.path(for: model)
+                    
+                    try await EpisodeDownload(
+                        path: URL(string: destination)!,
+                        remote: remote,
+                        episode: model
+                    ).create(on: context.application.db)
+                }
             }
         }
+        
+        // Restart DownloadManager if needed
+        await context.application.downloadManager.start()
         
         feed.lastFetched = .now
         try await feed.update(on: context.application.db)

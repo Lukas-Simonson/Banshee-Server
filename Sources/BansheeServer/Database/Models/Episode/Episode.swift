@@ -75,6 +75,13 @@ final class Episode: Model, @unchecked Sendable {
         self.episodeNumber = episodeNumber
         self.duration = duration
         self.audio = audio
+        self.config = EpisodeConfig(
+            title: nil,
+            description: nil,
+            imageURL: nil,
+            season: nil,
+            episodeNumber: nil
+        )
     }
 }
 

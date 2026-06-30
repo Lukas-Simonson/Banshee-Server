@@ -10,7 +10,7 @@ extension Request {
 }
 
 /// The access object used to read ``Episode`` information from a database.
-struct EpisodeDAO {
+struct EpisodeDAO: Sendable {
     
     /// The database to read from.
     let db: any Database
@@ -22,7 +22,7 @@ struct EpisodeDAO {
     ///   - userID: The optional id of a user who's progress should be included with the episodes. No progress is included when `userID` is nil.
     ///
     /// - Returns: An array of ``Episode``
-    func read(fromPodcastWithID id: UUID, includeProgressForUserWithID userID: UUID? = nil) async throws -> [Episode] {
+    func read(fromPodcastWithID id: UUID, includeProgressForUserWithID userID: UUID? = nil, includePodcast: Bool = false) async throws -> [Episode] {
         try await Episode.query(on: db)
             .filter(\.$podcast.$id == id)
             .when(userID != nil) { query in
@@ -31,6 +31,9 @@ struct EpisodeDAO {
                     .join(EpisodeProgress.self, on: \Episode.$id == \EpisodeProgress.$episode.$id)
                     .filter(EpisodeProgress.self, \.$user.$id == userID!)
                     .limit(1)
+            }
+            .when(includePodcast) { query in
+                query.with(\.$podcast)
             }
             .all()
     }
