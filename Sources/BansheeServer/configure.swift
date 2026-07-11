@@ -92,6 +92,7 @@ struct Configure {
                 )
             ),
             data: EpisodeDownloadDAO(db: app.db),
+            episodeDAO: EpisodeDAO(db: app.db),
             files: FileManager.default,
             downloadTimeoutSeconds: Int64(value(for: "DOWNLOAD_TIMEOUT", or: "3600")) ?? 3600,
             maxConcurrentDownloads: Int(value(for: "MAX_CONCURRENT_DOWNLOADS", or: "3")) ?? 3

@@ -21,6 +21,7 @@ extension Application {
 final actor DownloadManager {
     private let client: HTTPClient
     private let data: any DownloadData
+    private let episodeDAO: EpisodeDAO
     private let files: FileManager
     
     nonisolated let downloadPath: String
@@ -28,10 +29,11 @@ final actor DownloadManager {
     private let maxConcurrentDownloads: Int
     private var current = [EpisodeDownload]()
     
-    init(at path: String, client: HTTPClient, data: any DownloadData, files: FileManager, downloadTimeoutSeconds: Int64 = 3600, maxConcurrentDownloads: Int = 3) {
+    init(at path: String, client: HTTPClient, data: any DownloadData, episodeDAO: EpisodeDAO, files: FileManager, downloadTimeoutSeconds: Int64 = 3600, maxConcurrentDownloads: Int = 3) {
         self.downloadPath = path
         self.client = client
         self.data = data
+        self.episodeDAO = episodeDAO
         self.files = files
         self.downloadTimeoutSeconds = downloadTimeoutSeconds
         self.maxConcurrentDownloads = maxConcurrentDownloads
@@ -144,6 +146,15 @@ extension DownloadManager {
                 episodeDownload.finishedAt = .now
                 episodeDownload.progress = 100
                 try await self?.data.update(episodeDownload)
+                
+                if let dao = self?.episodeDAO {
+                    try await episodeDownload.$episode.load(on: dao.db)
+                    if let episode = episodeDownload.episode {
+                        episode.audio.localURL = episodeDownload.path
+                        try await dao.update(episode)
+                    }
+                }
+                
                 await self?.removeCurrentDownload(episodeDownload)
                 
                 await self?.start()
