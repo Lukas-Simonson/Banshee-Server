@@ -25,15 +25,15 @@ struct EpisodeDAO: Sendable {
     func read(fromPodcastWithID id: UUID, includeProgressForUserWithID userID: UUID? = nil, includePodcast: Bool = false) async throws -> [Episode] {
         try await Episode.query(on: db)
             .filter(\.$podcast.$id == id)
-            .when(userID != nil) { query in
-                query
-                    // TODO: There may be a way to do this operation without a Join, but this way works for now.
-                    .join(EpisodeProgress.self, on: \Episode.$id == \EpisodeProgress.$episode.$id)
-                    .filter(EpisodeProgress.self, \.$user.$id == userID!)
-                    .limit(1)
-            }
             .when(includePodcast) { query in
                 query.with(\.$podcast)
+            }
+            .let(userID) { id, query in
+                query.join(
+                    EpisodeProgress.self,
+                    on: \Episode.$id == \EpisodeProgress.$episode.$id && \EpisodeProgress.$user.$id == id,
+                    method: .left
+                )
             }
             .all()
     }
