@@ -10,7 +10,6 @@ struct EpisodesController: RouteCollection {
             
             try episodeID.register(collection: EpisodeConfigController())
             try episodeID.register(collection: EpisodeProgressController())
-            try episodeID.register(collection: EpisodeAudioController())
         }
     }
     

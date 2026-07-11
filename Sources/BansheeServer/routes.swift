@@ -16,5 +16,12 @@ func routes(_ app: Application) throws {
         try api.grouped(UserAuthenticator()).group(UserToken.adminGuardMiddleware()) { api in
             try api.register(collection: DownloadController())
         }
+        
+        // Special Audio Streaming Routes
+        try api.grouped(UserRequestAuthenticator()).group(UserToken.guardMiddleware()) { api in
+            try api.group("episodes", ":episodeID") { episodeID in
+                try episodeID.register(collection: EpisodeAudioController())
+            }
+        }
     }
 }
