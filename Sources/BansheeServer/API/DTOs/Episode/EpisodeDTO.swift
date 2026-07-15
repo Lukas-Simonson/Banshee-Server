@@ -5,7 +5,7 @@ struct EpisodeDTO: Content {
     var title: String
     let pubDate: Date
     var description: String
-    var imageURL: URI?
+    var imageURL: URL?
     
     var season: String?
     var episode: Int?
