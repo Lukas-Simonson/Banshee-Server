@@ -63,6 +63,8 @@ struct EpisodeDAO: Sendable {
     ///
     /// - Parameters:
     ///   - ids: The array of ids to fetch with
+    ///   - includeDownloads: if the episode's download metadata should be preloaded. (Default: false)
+    ///   - includePodcast: if the podcast for the episodes should be preloaded. (Default: false)
     ///
     /// - Returns: An array of ``Episode``.
     func readAll(in ids: [UUID], includeDownloads: Bool = false, includePodcast: Bool = false) async throws -> [Episode] {
@@ -80,5 +82,14 @@ struct EpisodeDAO: Sendable {
     /// Updates the provided episode onto the database.
     func update(_ episode: Episode) async throws {
         try await episode.save(on: db)
+    }
+    
+    /// Updates the provided episodes onto the database in a single transaction.
+    func update(_ episodes: [Episode]) async throws {
+        try await db.transaction { db in
+            for episode in episodes {
+                try await episode.update(on: db)
+            }
+        }
     }
 }

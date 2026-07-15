@@ -3,7 +3,7 @@ import Vapor
 struct EpisodeConfigDTO: Content {
     let title: String?
     let description: String?
-    let imageURL: URI?
+    let imageURL: URL?
     let season: String?
     let episode: Int?
 }

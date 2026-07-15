@@ -5,11 +5,17 @@ import Vapor
 /// `GET /api/episodes/:episodeID`: Retrieves an episode based on a provided id.
 struct EpisodesController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
-        try routes.group("episodes", ":episodeID") { episodeID in
-            episodeID.get(use: getEpisode)
+        try routes.group("episodes") { episodes in
+            try episodes.group(":episodeID") { episodeID in
+                episodeID.get(use: getEpisode)
+                
+                try episodeID.register(collection: EpisodeConfigController())
+                try episodeID.register(collection: EpisodeProgressController())
+            }
             
-            try episodeID.register(collection: EpisodeConfigController())
-            try episodeID.register(collection: EpisodeProgressController())
+            episodes.grouped("configs").group(UserToken.adminGuardMiddleware()) { configs in
+                configs.put(use: bulkUpdateConfig)
+            }
         }
     }
     
@@ -39,6 +45,44 @@ struct EpisodesController: RouteCollection {
                 includeAudio: query.includeAudio ?? false,
             )
     }
+    
+    /// Modifies the server's ``EpisodeConfig`` for all provided in the request body.
+    ///
+    /// - Body: Array of ``EpisodeConfigDTO``
+    ///
+    /// > Note: If a ``BulkEpisodeConfigRequest`` property is explicitly set to null
+    /// > it will remove the value of all the related configs. Omitting a value altogether
+    /// > simply changes nothing about the configs.
+    ///
+    /// - Returns: `202 Accepted` status with all the ``EpisodeDTO``s overridden with their configs in the body.
+    private func bulkUpdateConfig(_ req: Request) async throws -> Response {
+        try BulkEpisodeConfigRequest.validate(content: req)
+        let updateRequest = try req.content.decode(BulkEpisodeConfigRequest.self)
+        
+        guard !updateRequest.$season.isOmitted || !updateRequest.$imageURL.isOmitted
+        else { throw BulkUpdateError.noUpdatesProvided }
+        
+        let episodes = try await req.episodeDAO.readAll(in: updateRequest.ids)
+        
+        // MARK: This implementation iterates over the same array 3 different times.
+        // Realistically this is fine, but noting in case of performance issues on this endpoint.
+        
+        for episode in episodes {
+            if !updateRequest.$season.isOmitted {
+                episode.season = updateRequest.season
+            }
+            
+            if !updateRequest.$imageURL.isOmitted {
+                episode.config.imageURL = updateRequest.imageURL
+            }
+        }
+        
+        try await req.episodeDAO.update(episodes)
+        
+        return try await episodes
+            .map { try $0.toDTO(configMode: .override, includeAudio: false) }
+            .encodeResponse(status: .accepted, for: req)
+    }
 }
 
 extension EpisodesController {
@@ -64,5 +108,27 @@ extension EpisodesController {
             validations.add("includeAudio", as: Bool.self, required: false)
             validations.add("includeProgress", as: Bool.self, required: false)
         }
+    }
+    
+    /// The request for a bulk episode config update.
+    struct BulkEpisodeConfigRequest: Content, Validatable {
+        
+        /// The ids of all the episodes that should be updated with these changes.
+        let ids: [UUID]
+        
+        /// The url of an image to use for these episodes cover arts.
+        @Nullable var imageURL: URL?
+        
+        /// The season to set for all of the episodes.
+        @Nullable var season: String?
+        
+        static func validations(_ validations: inout Validations) {
+            validations.add("ids", as: [String].self, is: !.empty, required: true)
+            validations.add("imageURL", as: String.self, is: .url)
+        }
+    }
+    
+    enum BulkUpdateError {
+        static var noUpdatesProvided: Abort { Abort(.badRequest, reason: "No updates provided, imageURL or season must be provided.") }
     }
 }
