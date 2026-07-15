@@ -78,8 +78,8 @@ extension FeedsController {
         let autoDownload: DownloadMode
         
         static func validations(_ validations: inout Validations) {
-            validations.add("url", as: String.self, is: .url, required: true)
-            validations.add("autoDownload", as: String.self, is: .in("new", "new_and_existing", "none"), required: true)
+            validations.add("url", as: String.self, is: .url)
+            validations.add("autoDownload", as: String.self, is: .in("new", "new_and_existing", "none"))
         }
         
         enum DownloadMode: String, Content {
