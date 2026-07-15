@@ -16,6 +16,7 @@ struct FeedsController: RouteCollection {
     ///
     /// - Returns: `201 Created` status with a ``PodcastDTO`` body.
     private func register(req: Request) async throws -> Response {
+        try AddFeedRequest.validate(content: req)
         let feedRequest = try req.content.decode(AddFeedRequest.self)
         
         // Check if feed exists
@@ -27,12 +28,40 @@ struct FeedsController: RouteCollection {
             .content
             .decode(RSS.self)
         
-        let feed = RSSFeed(url: feedRequest.url)
-        let podcast = rss.channel.toModel()
+        let feed = RSSFeed(url: feedRequest.url, downloadNew: feedRequest.autoDownload != .none)
+        var podcast = rss.channel.toModel()
         let episodes = rss.channel.item.map { $0.toModel() }
+        
+        podcast = try await req.podcastDAO.create(podcast, from: feed, with: episodes)
+        
+        // Add downloads to queue if requested
+        if feedRequest.autoDownload == .newAndExisting {
+            // Run in a background task as this is not needed for the response.
+            Task.detached(priority: .background) { [podcast] in
+                do {
+                    try await req.episodeDAO
+                        .read(fromPodcastWithID: podcast.requireID(), includePodcast: true)
+                        .compactMap { episode in
+                            if let remote = episode.audio.remoteURL {
+                                return EpisodeDownload(
+                                    path: URL(string: req.application.downloadManager.path(for: episode))!,
+                                    remote: remote,
+                                    episode: episode
+                                )
+                            }
+                            
+                            return nil
+                        }
+                        .create(on: req.db)
+                    
+                    await req.application.downloadManager.start() // restart downloads if needed
+                } catch {
+                    req.logger.error("Failed to auto-queue downloads for podcast: \(podcast.id?.uuidString ?? "Unknown") | error: \(error)")
+                }
+            }
+        }
   
-        return try await req.podcastDAO
-            .create(podcast, from: feed, with: episodes)
+        return try await podcast
             .toDTO(configMode: .none)
             .encodeResponse(status: .created, for: req)
     }
@@ -41,9 +70,23 @@ struct FeedsController: RouteCollection {
 extension FeedsController {
     
     /// Request body intended for registering an RSS feed.
-    struct AddFeedRequest: Content {
+    struct AddFeedRequest: Content, Validatable {
         /// The URL of the RSS Feed.
         let url: URI
+        
+        /// How to automatically handle episode downloads.
+        let autoDownload: DownloadMode
+        
+        static func validations(_ validations: inout Validations) {
+            validations.add("url", as: String.self, is: .url)
+            validations.add("autoDownload", as: String.self, is: .in("new", "new_and_existing", "none"))
+        }
+        
+        enum DownloadMode: String, Content {
+            case new = "new"
+            case newAndExisting = "new_and_existing"
+            case none = "none"
+        }
     }
     
     enum FeedError {

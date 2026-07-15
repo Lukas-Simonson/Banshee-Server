@@ -10,7 +10,7 @@ extension Request {
 }
 
 /// The access object used to read ``Episode`` information from a database.
-struct EpisodeDAO {
+struct EpisodeDAO: Sendable {
     
     /// The database to read from.
     let db: any Database
@@ -22,15 +22,18 @@ struct EpisodeDAO {
     ///   - userID: The optional id of a user who's progress should be included with the episodes. No progress is included when `userID` is nil.
     ///
     /// - Returns: An array of ``Episode``
-    func read(fromPodcastWithID id: UUID, includeProgressForUserWithID userID: UUID? = nil) async throws -> [Episode] {
+    func read(fromPodcastWithID id: UUID, includeProgressForUserWithID userID: UUID? = nil, includePodcast: Bool = false) async throws -> [Episode] {
         try await Episode.query(on: db)
             .filter(\.$podcast.$id == id)
-            .when(userID != nil) { query in
-                query
-                    // TODO: There may be a way to do this operation without a Join, but this way works for now.
-                    .join(EpisodeProgress.self, on: \Episode.$id == \EpisodeProgress.$episode.$id)
-                    .filter(EpisodeProgress.self, \.$user.$id == userID!)
-                    .limit(1)
+            .when(includePodcast) { query in
+                query.with(\.$podcast)
+            }
+            .let(userID) { id, query in
+                query.join(
+                    EpisodeProgress.self,
+                    on: \Episode.$id == \EpisodeProgress.$episode.$id && \EpisodeProgress.$user.$id == id,
+                    method: .left
+                )
             }
             .all()
     }
@@ -56,8 +59,37 @@ struct EpisodeDAO {
         return try await Episode.find(id, on: db)
     }
     
+    /// Reads all episodes with IDs contained in the provided id array.
+    ///
+    /// - Parameters:
+    ///   - ids: The array of ids to fetch with
+    ///   - includeDownloads: if the episode's download metadata should be preloaded. (Default: false)
+    ///   - includePodcast: if the podcast for the episodes should be preloaded. (Default: false)
+    ///
+    /// - Returns: An array of ``Episode``.
+    func readAll(in ids: [UUID], includeDownloads: Bool = false, includePodcast: Bool = false) async throws -> [Episode] {
+        try await Episode.query(on: db)
+            .filter(\.$id ~~ ids)
+            .when(includeDownloads) { query in
+                query.with(\.$download)
+            }
+            .when(includePodcast) { query in
+                query.with(\.$podcast)
+            }
+            .all()
+    }
+    
     /// Updates the provided episode onto the database.
     func update(_ episode: Episode) async throws {
         try await episode.save(on: db)
+    }
+    
+    /// Updates the provided episodes onto the database in a single transaction.
+    func update(_ episodes: [Episode]) async throws {
+        try await db.transaction { db in
+            for episode in episodes {
+                try await episode.update(on: db)
+            }
+        }
     }
 }

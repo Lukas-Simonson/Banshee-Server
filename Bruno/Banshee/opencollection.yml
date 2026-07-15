@@ -17,9 +17,11 @@ config:
 request:
   auth:
     type: bearer
-    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4iLCJzdWJqZWN0IjoiQzUzMjVDMDEtRUMxQi00QjI3LTgzQkQtNUU1QTk3RTQ5MzVCIiwiZXhwaXJhdGlvbiI6NjQwOTIyMTEyMDB9.O8amEOFDPYw9DzOG6dk7mlNDkattxGDhhBR48npAzIc
+    token: "{{authToken}}"
   variables:
     - name: baseURL
-      value: https://localhost:6060
+      value: http://localhost:6060
+    - name: authToken
+      value: <some auth token>
 bundled: false
 extensions: {}

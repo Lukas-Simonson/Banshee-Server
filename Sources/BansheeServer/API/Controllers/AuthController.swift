@@ -38,14 +38,13 @@ struct AuthController: RouteCollection {
         guard try await req.userDAO.adminCount() == 0
         else { throw Abort(.badRequest, reason: "An admin account already exists, please use the /api/auth/register endpoint to create a new user.") }
         
-        let user = try await req.userDAO
-            .create(
-                email: registerRequest.email,
-                username: registerRequest.username,
-                name: registerRequest.name,
-                passwordHash: req.password.async.hash(registerRequest.password),
-                role: registerRequest.role
-            )
+        let user = try await req.userDAO.create(
+            email: registerRequest.email,
+            username: registerRequest.username,
+            name: registerRequest.name,
+            passwordHash: req.password.async.hash(registerRequest.password),
+            role: registerRequest.role
+        )
         
         return try await user
             .toDTO(with: req.jwt.sign(user.token()))
@@ -61,15 +60,16 @@ struct AuthController: RouteCollection {
         try RegisterRequest.validate(content: req)
         let registerRequest = try req.content.decode(RegisterRequest.self)
         
-        return try await req.userDAO
-            .create(
-                email: registerRequest.email,
-                username: registerRequest.username,
-                name: registerRequest.name,
-                passwordHash: req.password.async.hash(registerRequest.password),
-                role: registerRequest.role
-            )
-            .toDTO()
+        let user = try await req.userDAO.create(
+            email: registerRequest.email,
+            username: registerRequest.username,
+            name: registerRequest.name,
+            passwordHash: req.password.async.hash(registerRequest.password),
+            role: registerRequest.role
+        )
+        
+        return try await user
+            .toDTO(with: req.jwt.sign(user.token()))
             .encodeResponse(status: .created, for: req)
     }
     

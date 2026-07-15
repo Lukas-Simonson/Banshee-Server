@@ -30,6 +30,6 @@ struct EpisodeAudioController: RouteCollection {
         guard let localURL = episode.audio.localURL
         else { throw FileError.noAudioFiles }
         
-        return try await req.fileio.asyncStreamFile(at: localURL.string)
+        return try await req.fileio.asyncStreamFile(at: localURL.relativePath)
     }
 }

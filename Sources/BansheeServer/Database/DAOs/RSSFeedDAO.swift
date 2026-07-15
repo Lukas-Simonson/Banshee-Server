@@ -20,4 +20,14 @@ struct RSSFeedDAO {
             .filter(\.$url == url)
             .first()
     }
+    
+    func expiredFeeds() async throws -> [RSSFeed] {
+        try await RSSFeed.query(on: db)
+            .filter(\.$updateInterval != nil)
+            .with(\.$podcast) { podcast in
+                podcast.with(\.$episodes)
+            }
+            .all()
+            .filter { $0.isExpired } // MARK: Could be done with a fancy query filter, but should be fine for now.
+    }
 }

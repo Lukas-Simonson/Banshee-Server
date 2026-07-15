@@ -2,7 +2,7 @@ import Vapor
 
 struct AudioDTO: Content {
     let remoteURL: URI?
-    let localURL: URI?
+    let localURL: URL?
     let length: Int64?
     let type: String?
 }

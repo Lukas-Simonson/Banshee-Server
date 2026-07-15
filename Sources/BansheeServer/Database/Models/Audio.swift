@@ -10,7 +10,7 @@ final class Audio: Fields, @unchecked Sendable {
     
     /// The local / cached location of the audio file.
     @OptionalField(key: "local_url")
-    var localURL: URI?
+    var localURL: URL?
     
     /// The size of the audio file in bytes.
     @OptionalField(key: "length")
@@ -22,7 +22,7 @@ final class Audio: Fields, @unchecked Sendable {
     
     init() {}
     
-    init(remoteURL: URI? = nil, localURL: URI? = nil, length: Int64? = nil, type: String? = nil) {
+    init(remoteURL: URI? = nil, localURL: URL? = nil, length: Int64? = nil, type: String? = nil) {
         self.remoteURL = remoteURL
         self.localURL = localURL
         self.length = length

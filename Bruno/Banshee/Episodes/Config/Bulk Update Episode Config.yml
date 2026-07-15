@@ -1,0 +1,27 @@
+info:
+  name: Bulk Update Episode Config
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{baseURL}}/api/episodes/configs"
+  body:
+    type: json
+    data: |-
+      // Example:
+      // {
+      //   "ids": [
+      //     "E57D4631-7077-419D-B0A7-D259B53486A2",
+      //     "22BDAFA4-3E4D-4E52-91E2-FDB136067FD8"
+      //   ],
+      //   "imageURL": null,
+      //   "season": "4 [Grandads & Galaxies]"
+      // }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

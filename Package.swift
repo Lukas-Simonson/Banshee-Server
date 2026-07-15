@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "BansheeServer",
     platforms: [
-       .macOS(.v13)
+        .macOS(.v14)
     ],
     dependencies: [
         // 💧 A server-side Swift web framework.
@@ -21,6 +21,8 @@ let package = Package(
         .package(url: "https://github.com/vadymmarkov/Fakery", from: "5.0.0"),
         // 📄 XML Encoding & Decoding using Codable.
         .package(url: "https://github.com/Lukas-Simonson/Banshee-XMLCoder", branch: "main"),
+        // 📥 Fluent backed job management.
+        .package(url: "https://github.com/vapor-community/vapor-queues-fluent-driver.git", from: "3.0.0")
     ],
     targets: [
         .executableTarget(
@@ -33,6 +35,7 @@ let package = Package(
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "JWT", package: "jwt"),
                 .product(name: "XMLCoder", package: "Banshee-XMLCoder"),
+                .product(name: "QueuesFluentDriver", package: "vapor-queues-fluent-driver"),
             ],
             swiftSettings: swiftSettings
         ),

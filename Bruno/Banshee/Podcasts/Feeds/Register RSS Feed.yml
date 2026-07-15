@@ -11,7 +11,8 @@ http:
     data: |-
       // Example:
       // {
-      //   "url": "https://rss.acast.com/dungeons-and-daddies"
+      //   "url": "https://rss.acast.com/dungeons-and-daddies",
+      //   "autoDownload": "new_and_existing" // must be: "none", "new", or "new_and_existing"
       // }
   auth: inherit
 
@@ -28,6 +29,7 @@ docs: |-
 
   ## Request Body
 
-  | name | description              | type        |
-  |------|--------------------------|-------------|
-  | url  | The url of the RSS feed. | String(URL) |
+  | name         | description                                    | type                                      |
+  |--------------|------------------------------------------------|-------------------------------------------|
+  | url          | The url of the RSS feed.                       | String(URL)                               |
+  | autoDownload | How to automatically handle episode downloads. | String('none', 'new', 'new_and_existing') |

@@ -14,7 +14,7 @@ final class EpisodeConfig: Fields, @unchecked Sendable {
 
     /// An image to use for the episode cover art.
     @OptionalField(key: "image_url")
-    var imageURL: URI?
+    var imageURL: URL?
 
     /// The season of the episode.
     @OptionalField(key: "season")
@@ -26,7 +26,7 @@ final class EpisodeConfig: Fields, @unchecked Sendable {
     
     init() {}
     
-    init(title: String?, description: String?, imageURL: URI?, season: String?, episodeNumber: Int?) {
+    init(title: String?, description: String?, imageURL: URL?, season: String?, episodeNumber: Int?) {
         self.title = title
         self.description = description
         self.imageURL = imageURL

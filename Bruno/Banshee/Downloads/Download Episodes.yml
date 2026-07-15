@@ -1,0 +1,28 @@
+info:
+  name: Download Episodes
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/download"
+  body:
+    type: json
+    data: |-
+      // {
+      //   "episodes": [
+      //     "A6422605-A86A-4071-99C5-B56100EF3017",
+      //     "C602105F-CEC3-40DA-A7DE-FA89162E6606",
+      //     "06877A42-030D-480F-A3D1-E999DD1BFF4F",
+      //     "0E4A3CEE-F651-49A2-866E-4BC6B0629742",
+      //     "F0E864AB-03CD-4D10-AB73-898D3EC358FC",
+      //     "74D71B3F-81A8-48A0-AEBB-4DF74DD894A8"
+      //   ]
+      // }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
