@@ -123,8 +123,8 @@ extension EpisodesController {
         @Nullable var season: String?
         
         static func validations(_ validations: inout Validations) {
-            validations.add("ids", as: [String].self, is: !.empty, required: true)
-            validations.add("imageURL", as: String.self, is: .url)
+            validations.add("ids", as: [String].self, is: !.empty)
+            validations.add("imageURL", as: String.self, is: .url, required: false)
         }
     }
     
