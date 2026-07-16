@@ -6,9 +6,13 @@ import Vapor
 /// `POST /api/playlists`: Creates a new playlist
 struct PlaylistController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
-        routes.group("playlists") { playlists in
+        try routes.group("playlists") { playlists in
             playlists.get(use: getPlaylists)
             playlists.post(use: createPlaylist)
+            
+            try playlists.group(":playlistID") { playlistID in
+                try playlistID.register(collection: PlaylistEpisodesController())
+            }
         }
     }
     

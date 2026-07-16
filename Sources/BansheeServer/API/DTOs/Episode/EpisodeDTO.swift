@@ -19,7 +19,7 @@ struct EpisodeDTO: Content {
 }
 
 extension Episode {
-    func toDTO(configMode: ConfigMode, includeAudio: Bool) throws -> EpisodeDTO {
+    func toDTO(configMode: ConfigMode, includeAudio: Bool, progress: EpisodeProgress? = nil) throws -> EpisodeDTO {
         var dto = try EpisodeDTO(
             id: requireID(),
             title: title,
@@ -29,7 +29,7 @@ extension Episode {
             episode: episodeNumber,
             duration: duration,
             audio: !includeAudio ? nil : audio.toDTO(),
-            progress: try? joined(EpisodeProgress.self).toDTO(),
+            progress: try? (progress ?? joined(EpisodeProgress.self)).toDTO(),
             config: config.toDTO(),
             podcastID: $podcast.id
         )

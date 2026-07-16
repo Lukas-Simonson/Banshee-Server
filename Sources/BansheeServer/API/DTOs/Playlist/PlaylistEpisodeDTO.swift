@@ -8,14 +8,18 @@ struct PlaylistEpisodeDTO: Content {
 }
 
 extension PlaylistEpisode {
-    func toDTO() throws -> PlaylistEpisodeDTO {
+    func toDTO(
+        episodeConfigMode: ConfigMode = .override,
+        includeEpisodeAudio: Bool = false
+    ) throws -> PlaylistEpisodeDTO {
         try PlaylistEpisodeDTO(
             id: requireID(),
             position: position,
             playlistID: $playlist.id,
             episode: episode.toDTO(
-                configMode: .override,
-                includeAudio: false
+                configMode: episodeConfigMode,
+                includeAudio: includeEpisodeAudio,
+                progress: try? joined(EpisodeProgress.self)
             )
         )
     }
