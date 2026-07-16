@@ -15,7 +15,7 @@ final class Playlist: Model, @unchecked Sendable {
     
     /// The cover art image to use for the playlist.
     @OptionalField(key: "image_url")
-    var imageURL: URI?
+    var imageURL: URL?
     
     /// An optional description of the playlist.
     @OptionalField(key: "description")
@@ -25,17 +25,23 @@ final class Playlist: Model, @unchecked Sendable {
     @Field(key: "is_public")
     var isPublic: Bool
     
+    /// Who created / owns this playlist.
     @OptionalParent(key: "creator_id")
     var creator: User?
     
+    /// The episodes in the playlist
+    @Children(for: \.$playlist)
+    var episodes: [PlaylistEpisode]
+    
     init() {}
     
-    init(title: String, imageURL: URI? = nil, description: String, isPublic: Bool) {
+    init(title: String, imageURL: URL? = nil, description: String? = nil, isPublic: Bool, creatorID: UUID) {
         self.id = id
         self.title = title
         self.imageURL = imageURL
         self.description = description
         self.isPublic = isPublic
+        self.$creator.id = creatorID
     }
 }
 

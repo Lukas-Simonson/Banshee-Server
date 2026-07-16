@@ -21,10 +21,9 @@ final class PlaylistEpisode: Model, @unchecked Sendable {
     
     init() {}
     
-    init(position: Double, playlist: Playlist, episode: Episode) {
+    init(position: Double, episodeID: UUID) {
         self.position = position
-        self.playlist = playlist
-        self.episode = episode
+        self.$episode.id = episodeID
     }
 }
 

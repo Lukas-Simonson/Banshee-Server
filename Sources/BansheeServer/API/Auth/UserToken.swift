@@ -24,6 +24,11 @@ struct UserToken: JWTPayload, Authenticatable {
     func verify(using algorithm: some JWTAlgorithm) async throws {
         try self.expiration.verifyNotExpired()
     }
+    
+    func requireID() throws -> UUID {
+        guard let userID else { throw AuthError.invalidAuth }
+        return userID
+    }
 }
 
 extension User {

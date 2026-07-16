@@ -10,6 +10,7 @@ func routes(_ app: Application) throws {
         try api.grouped(UserAuthenticator()).group(UserToken.guardMiddleware()) { api in
             try api.register(collection: PodcastsController())
             try api.register(collection: EpisodesController())
+            try api.register(collection: PlaylistController())
         }
         
         // Root Admin Protected Endpoints
