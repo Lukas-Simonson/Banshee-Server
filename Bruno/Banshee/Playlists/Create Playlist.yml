@@ -1,0 +1,32 @@
+info:
+  name: Create Playlist
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/playlists"
+  body:
+    type: json
+    data: |-
+      // Example:
+      // {
+      //   "title": "Grandpas & Galaxies",
+      //   "imageURL": "https://static.wikia.nocookie.net/dungeonsanddads/images/d/dd/Grandpas_and_Galaxies_Cover_Art.jpg",
+      //   "description": "Season 4 of Dungeons and Daddies, including bonus content.",
+      //   "isPublic": true,
+      //   "episodeIDs": [
+      //     "97DC413A-BCD7-446D-B96F-293A0FF2D5A3",
+      //     "A81CBD2D-31A0-43D7-8919-6A95977ADD50",
+      //     "6FED59CA-9A2A-4E55-A4C2-E53CACE44BB1",
+      //     "0CE8E3E5-113E-4034-AB2D-7E4087C86DD4",
+      //     "6681CB90-EE18-407D-AA15-E9A8FAFD09A0"
+      //   ]
+      // }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
