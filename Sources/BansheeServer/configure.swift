@@ -74,6 +74,10 @@ struct Configure {
         app.migrations.add(EpisodeProgress.Migration.Create())
         app.migrations.add(EpisodeDownload.Migration.Create())
         
+        app.migrations.add(Playlist.Migration.Create())
+        app.migrations.add(Playlist.Migration.DeletePrivatePlaylistTrigger())
+        app.migrations.add(PlaylistEpisode.Migration.Create())
+        
         // Perform Migrations
         try await app.autoMigrate()
     }

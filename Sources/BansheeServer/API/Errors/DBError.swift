@@ -21,4 +21,7 @@ enum DBError {
     static func noItemFound(_ type: String, with id: some CustomStringConvertible) -> Abort {
         Abort(.notFound, reason: "No \(type) found with matching id(s): \(id)")
     }
+    
+    /// Thrown when expecting a specific database, used for migrations.
+    struct UnsupportedDatabase: Error { }
 }

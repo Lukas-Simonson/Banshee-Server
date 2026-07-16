@@ -1,4 +1,5 @@
 import Fluent
+import FluentSQLiteDriver
 import Vapor
 
 /// Playlist Metadata
@@ -23,6 +24,9 @@ final class Playlist: Model, @unchecked Sendable {
     /// Whether or not this playlist is accessible to others on the server.
     @Field(key: "is_public")
     var isPublic: Bool
+    
+    @OptionalParent(key: "creator_id")
+    var creator: User?
     
     init() {}
     
@@ -50,12 +54,54 @@ extension Playlist.Migration {
                 .field("image_url", .string)
                 .field("description", .string)
                 .field("is_public", .bool)
+                .field("creator_id", .uuid, .references("user", "id", onDelete: .setNull))
                 .create()
         }
         
         func revert(on database: any Database) async throws {
             try await database.schema("playlist")
                 .delete()
+        }
+    }
+    
+    struct DeletePrivatePlaylistTrigger: AsyncMigration {
+        func prepare(on database: any Database) async throws {
+            guard let db = database as? any SQLDatabase
+            else { throw DBError.UnsupportedDatabase() }
+            
+            switch db {
+                case is any SQLiteDatabase:
+                    try await db.raw("""
+                    CREATE TRIGGER delete_private_playlist_when_creator_removed
+                    AFTER UPDATE OF creator_id
+                    ON playlist
+                    FOR EACH ROW
+                    WHEN
+                        NEW.creator_id IS NULL
+                        AND OLD.creator_id IS NOT NULL
+                        AND NEW.is_public = 0
+                    BEGIN
+                        DELETE FROM playlist
+                        WHERE id = NEW.id;
+                    END;
+                    """).run()
+                default:
+                    throw DBError.UnsupportedDatabase()
+            }
+        }
+        
+        func revert(on database: any Database) async throws {
+            guard let db = database as? any SQLDatabase
+            else { throw DBError.UnsupportedDatabase() }
+            
+            switch db {
+                case is any SQLiteDatabase:
+                    try await db.raw("""
+                    DROP TRIGGER delete_private_playlist_when_creator_removed;
+                    """).run()
+                default:
+                    throw DBError.UnsupportedDatabase()
+            }
         }
     }
 }
